@@ -490,11 +490,11 @@ body.dogfight #rain{opacity:.3}#rain{transition:opacity .25s}
 #cats .frow.cst .cstl path.on{stroke:rgba(182,255,203,.95);stroke-width:1.6;stroke-dasharray:4 4;filter:drop-shadow(0 0 4px #00ff41)}
 #cats .frow.cst .cstl circle{fill:#d6ffe0;opacity:.75}
 @keyframes cstflow{to{stroke-dashoffset:-32}}
-#cats .frow.cst .fold{position:absolute!important;width:128px!important;min-height:0!important;padding:8px 4px!important;background:none!important;border:none!important;transform:translate(-50%,-50%);animation:cstfloat var(--fd,7s) ease-in-out infinite alternate;animation-delay:var(--fdl,0s);z-index:1}
-#cats .frow.cst .fold svg{width:38px;height:auto;filter:drop-shadow(0 0 6px rgba(0,255,65,.55));transition:transform .25s,filter .25s}
-#cats .frow.cst .fold::before{content:"";position:absolute;left:50%;top:26px;width:10px;height:10px;margin:-5px 0 0 -5px;border-radius:50%;background:#00ff41;box-shadow:0 0 14px 4px rgba(0,255,65,.45);opacity:0;transition:opacity .25s}
+#cats .frow.cst .fold{position:absolute!important;width:176px!important;min-height:0!important;padding:8px 4px!important;background:none!important;border:none!important;transform:translate(-50%,-50%);animation:cstfloat var(--fd,7s) ease-in-out infinite alternate;animation-delay:var(--fdl,0s);z-index:1}
+#cats .frow.cst .fold svg{width:50px;height:auto;filter:drop-shadow(0 0 6px rgba(0,255,65,.55));transition:transform .25s,filter .25s}
+#cats .frow.cst .fold::before{content:"";position:absolute;left:50%;top:32px;width:12px;height:12px;margin:-6px 0 0 -6px;border-radius:50%;background:#00ff41;box-shadow:0 0 14px 4px rgba(0,255,65,.45);opacity:0;transition:opacity .25s}
 #cats .frow.cst .fold .fk,#cats .frow.cst .fold .fc{opacity:0;transition:opacity .2s}
-#cats .frow.cst .fold .fn{font-size:15px;text-shadow:0 0 8px #000,0 0 3px #000}
+#cats .frow.cst .fold .fn{font-size:17px;text-shadow:0 0 8px #000,0 0 3px #000}
 #cats .frow.cst .fold:hover,#cats .frow.cst .fold:focus-visible{z-index:3;background:none!important}
 #cats .frow.cst .fold:hover svg,#cats .frow.cst .fold:focus-visible svg{transform:scale(1.25);filter:drop-shadow(0 0 12px #00ff41)}
 #cats .frow.cst .fold:hover .fk,#cats .frow.cst .fold:hover .fc,#cats .frow.cst .fold:focus-visible .fk,#cats .frow.cst .fold:focus-visible .fc{opacity:1}
@@ -1365,17 +1365,21 @@ function renderDesk(){const s=C.site;
 function cstHash(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return()=>{h^=h<<13;h^=h>>>17;h^=h<<5;return((h>>>0)%10000)/10000}}
 function constellate(){const fr=$("#cats .frow");if(!fr)return;if(innerWidth<600||document.body.classList.contains("edit")){fr.classList.remove("cst");return}
   const fs=[...fr.querySelectorAll(".fold")];if(fs.length<3){fr.classList.remove("cst");return}fr.classList.add("cst");
-  const W=fr.clientWidth,H=fr.clientHeight,n=fs.length,ar=W/H,cols=Math.max(2,Math.round(Math.sqrt(n*ar))),rows=Math.ceil(n/cols),cw=W/cols,ch=H/rows;
-  /* grille désordonnée : chaque dossier dans sa case, décalé au hasard (stable), rangées en quinconce */
-  const slots=[];for(let r=0;r<rows;r++)for(let c=0;c<cols;c++)slots.push([c,r]);
-  const pts=fs.map((f,i)=>{const rnd=cstHash(f.dataset.open||String(i)),[c,r]=slots[i],x=(c+.5+(r%2?.22:-.22)+(rnd()-.5)*.42)*cw,y=(r+.5+(rnd()-.5)*.5)*ch;
-    const px=Math.max(70,Math.min(W-70,x)),py=Math.max(50,Math.min(H-50,y));f.style.left=px+"px";f.style.top=py+"px";f.style.setProperty("--fd",(5+rnd()*5).toFixed(1)+"s");f.style.setProperty("--fdl",(-rnd()*6).toFixed(1)+"s");return{x:px,y:py,f,cat:f.dataset.cat,rnd}});
+  const W=fr.clientWidth,H=fr.clientHeight,n=fs.length,ar=W/H,ideal=Math.sqrt(n*ar);
+  /* nombre de colonnes : proche de l'idéal, en privilégiant des rangées pleines et équilibrées */
+  let cols=2,best=1e9;for(let c=2;c<=Math.min(n,8);c++){const r=Math.ceil(n/c),gap=r*c-n,sc=Math.abs(c-ideal)+gap*.9;if(sc<best){best=sc;cols=c}}
+  const rows=Math.ceil(n/cols),cw=W/cols,ch=H/rows;
+  /* grille désordonnée et centrée : chaque rangée est centrée, même incomplète ; léger décalage stable */
+  const slots=[];for(let r=0;r<rows;r++){const k=Math.min(cols,n-r*cols),off=(cols-k)/2;for(let c=0;c<k;c++)slots.push([c+off,r])}
+  const pts=fs.map((f,i)=>{const rnd=cstHash(f.dataset.open||String(i)),[c,r]=slots[i],x=(c+.5+(r%2?.12:-.12)+(rnd()-.5)*.3)*cw,y=(r+.5+(rnd()-.5)*.4)*ch;
+    const px=Math.max(85,Math.min(W-85,x)),py=Math.max(60,Math.min(H-60,y));f.style.setProperty("--fd",(5+rnd()*5).toFixed(1)+"s");f.style.setProperty("--fdl",(-rnd()*6).toFixed(1)+"s");return{x:px,y:py,f,cat:f.dataset.cat,rnd}});
+  {const xs=pts.map(p=>p.x),ys=pts.map(p=>p.y),dx=W/2-(Math.min(...xs)+Math.max(...xs))/2,dy=H/2-(Math.min(...ys)+Math.max(...ys))/2;pts.forEach(p=>{p.x+=dx;p.y+=dy;p.f.style.left=p.x+"px";p.f.style.top=p.y+"px"})}
   /* filaments : vers les 2 voisins les plus proches + entre dossiers de la même catégorie */
   const E=new Map(),add=(a,b,same)=>{const k=a<b?a+"-"+b:b+"-"+a;if(!E.has(k))E.set(k,{a:Math.min(a,b),b:Math.max(a,b),same})};
   pts.forEach((p,i)=>{pts.map((q,j)=>[j,Math.hypot(q.x-p.x,q.y-p.y)]).filter(([j])=>j!==i).sort((u,v)=>u[1]-v[1]).slice(0,2).forEach(([j])=>add(i,j,p.cat===pts[j].cat));
     pts.forEach((q,j)=>{if(j>i&&q.cat===p.cat)add(i,j,true)})});
   let svg=`<svg class="cstl" viewBox="0 0 ${W} ${H}" aria-hidden="true">`;let k=0;
-  for(const e of E.values()){const A=pts[e.a],B=pts[e.b],mx=(A.x+B.x)/2,my=(A.y+B.y)/2,dx=B.x-A.x,dy=B.y-A.y,L=Math.hypot(dx,dy)||1,bend=(A.rnd()-.5)*L*.5,cx=mx-dy/L*bend,cy=my+dx/L*bend,d=`M${A.x.toFixed(1)},${(A.y-14).toFixed(1)} Q${cx.toFixed(1)},${cy.toFixed(1)} ${B.x.toFixed(1)},${(B.y-14).toFixed(1)}`;
+  for(const e of E.values()){const A=pts[e.a],B=pts[e.b],mx=(A.x+B.x)/2,my=(A.y+B.y)/2,dx=B.x-A.x,dy=B.y-A.y,L=Math.hypot(dx,dy)||1,bend=(A.rnd()-.5)*L*.5,cx=mx-dy/L*bend,cy=my+dx/L*bend,d=`M${A.x.toFixed(1)},${(A.y-18).toFixed(1)} Q${cx.toFixed(1)},${cy.toFixed(1)} ${B.x.toFixed(1)},${(B.y-18).toFixed(1)}`;
     svg+=`<path id="cst${k}" d="${d}" data-a="${e.a}" data-b="${e.b}" data-same="${e.same?1:0}"/>`;if(k%2===0)svg+=`<circle r="1.8"><animateMotion dur="${(2.5+A.rnd()*3).toFixed(1)}s" repeatCount="indefinite" path="${d}"/></circle>`;k++}
   svg+=`</svg>`;fr.querySelectorAll(".cstl").forEach(s=>s.remove());fr.insertAdjacentHTML("afterbegin",svg);
   const paths=[...fr.querySelectorAll(".cstl path")];
@@ -2309,10 +2313,10 @@ document.addEventListener("focusin",e=>{if(e.target.closest&&e.target.closest('.
 .cat h2::after{content:"// index /matrix/dossiers · lecture seule";margin-left:auto;font:400 8px/1 "Press Start 2P",monospace;color:var(--gd)}
 .cfb{border-style:dashed!important}
 /* étiquettes de fichiers dans la constellation */
-#cats .frow.cst .fold .fn{font-family:"IBM Plex Mono",monospace!important;font-size:12px!important;letter-spacing:.02em;color:var(--g2)}
-#cats .frow.cst .fold .fm{display:block;font:400 7px/1.5 "Press Start 2P",monospace;color:var(--gd);white-space:nowrap;text-shadow:0 0 6px #000}
+#cats .frow.cst .fold .fn{font-family:"IBM Plex Mono",monospace!important;font-size:14px!important;letter-spacing:.02em;color:var(--g2)}
+#cats .frow.cst .fold .fm{display:block;font:400 8px/1.6 "Press Start 2P",monospace;color:var(--gd);white-space:nowrap;text-shadow:0 0 6px #000}
 #cats .frow.cst .fold:hover .fm,#cats .frow.cst .fold:focus-visible .fm{color:var(--g)}
-#cats .frow.cst .fold svg{width:28px!important}
+#cats .frow.cst .fold svg{width:40px!important}
 #cats .fold .fm{display:none}
 /* fenêtres : fichiers ouverts */
 .win{background:rgba(0,9,3,.72)!important;border:none!important;box-shadow:0 0 60px rgba(0,255,65,.12),0 0 0 1px rgba(0,255,65,.18)!important;-webkit-backdrop-filter:blur(3px)!important;backdrop-filter:blur(3px)!important}
