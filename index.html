@@ -1270,7 +1270,8 @@ function hvCell(i){const o=HV.o,fs=HV.fs,c=i%HV.c,r=(i/HV.c)|0,v=HV.L[i],px=c*fs
   o.font=sz.toFixed(1)+"px VT323,monospace";o.fillStyle=v>.56?`rgba(${(150+105*v)|0},255,${(170+85*v)|0},${a})`:`rgba(${(60*v)|0},${(120+160*v)|0},${(55+60*v)|0},${a})`;o.fillText((Math.random()<.5?g:DIG[HV.ch[i]]),px+fs/2,py+fs/2+1)}
 function hvShow(url,force){if(!url||(TOUCH&&!force))return;HV.rd=force?480:700;if(!force&&url!==HV.url&&performance.now()-(HV.sh||0)>260){HV.sh=performance.now();sfx.hover()}if(!force){HV.cx=HV.cy=null;HV.sc=1;HV.fso=0;HV.rstyle=null}if(url===HV.url&&HV.ta)return;if(url!==HV.url)HV.tn=null;HV.url=url;HV.ta=1;HV.t0=performance.now();HV.gl=performance.now()+120;HV.nextGl=performance.now()+700;const go=im=>{if(HV.url===url){hvBuild(im);HV.t0=performance.now()}};
   const c=HV.cache.get(url);if(c&&c.complete&&c.naturalWidth){go(c);return}const im=new Image();im.onload=()=>go(im);im.src=url;HV.cache.set(url,im)}
-function hvHide(){HV.ta=0}
+function hvHide(){/* le fond du dernier dossier survolé reste en arrière-plan */if(HV.keep&&!HV.block&&!document.body.classList.contains("pres-open")){if(HV.url!==HV.keep){HV.ta=0;clearTimeout(HV.kt);HV.kt=setTimeout(()=>{if(!HV.block&&!document.body.classList.contains("pres-open")&&HV.url!==HV.keep)hvShow(HV.keep)},220)}return}HV.ta=0}
+function hvKeepShow(){if(TOUCH||HV.block||document.body.classList.contains("pres-open"))return;if(!HV.keep){const p=projs().find(x=>x.id==="og");if(p&&p.files.length)HV.keep=safe(p.hv)||coverOf(p)}if(HV.keep)hvShow(HV.keep)}
 function hvDraw(x,t){HV.a+=(HV.ta-HV.a)*(HV.ta?.14:.1);if(HV.a<.01||!HV.off)return;
   /* scintillement : quelques chiffres changent à chaque image */
   const n=HV.c*HV.r,k=Math.max(4,n*.012|0);for(let q=0;q<k;q++){const i=Math.random()*n|0;HV.ch[i]=Math.random()*10|0;hvCell(i)}
@@ -1317,7 +1318,7 @@ function toPills(){setSt("pill");selPill("red")}
 function selPill(p){$$(".pill").forEach(b=>b.classList.toggle("sel",b.dataset.p===p))}
 function choose(p){if(p==="red"){sfx.open();enterOS()}else{sfx.over();gameOver()}}
 function gameOver(){setSt("over");let n=9;$("#cd").textContent=n;clearInterval(cdT);cdT=setInterval(()=>{n--;$("#cd").textContent=n;sfx.blip();if(n<=0){clearInterval(cdT);$("#cd").textContent="0";setTimeout(()=>{if(stage==="over"){toast("Trop tard : la matrice te rattrape.");enterOS()}},700)}},1000)}
-function enterOS(fast){if(introDone)return;introDone=true;if(!WEL){MUS.mode="amb";setTimeout(()=>sfx.boot(),250)}run++;clearInterval(cdT);ss.set("seen","1");boost(5,1300);
+function enterOS(fast){if(introDone)return;introDone=true;setTimeout(hvKeepShow,1400);if(!WEL){MUS.mode="amb";setTimeout(()=>sfx.boot(),250)}run++;clearInterval(cdT);ss.set("seen","1");boost(5,1300);
   if(!fast&&!RM){IN.classList.add("dive");setTimeout(()=>{IN.style.display="none";IN.classList.remove("dive")},880)}else IN.style.display="none";
   document.body.classList.add("os");renderDesk();setTimeout(()=>scramble($("#nm"),C.site.name||"MAXENCE"),fast?0:500)}
 IN.addEventListener("click",e=>{if(e.target.closest("#skip")){enterOS();return}const pl=e.target.closest(".pill");
@@ -1397,10 +1398,10 @@ function constellate(){const fr=$("#cats .frow");if(!fr)return;if(innerWidth<600
   fs.forEach((f,i)=>{f.onpointerenter=()=>lit(i);f.onpointerleave=()=>lit(null);f.onfocus=()=>lit(i);f.onblur=()=>lit(null)})}
 addEventListener("resize",()=>{clearTimeout(constellate.h);constellate.h=setTimeout(constellate,150)});
 let hvCur=null;
-$("#cats").addEventListener("pointerover",e=>{if(e.pointerType!=="mouse")return;const f=e.target.closest(".fold[data-open]");if(!f||f===hvCur)return;hvCur=f;const p=projs().find(x=>x.id===f.dataset.open);if(p&&p.files.length)hvShow(safe(p.hv)||coverOf(p));else hvHide()});
-$("#cats").addEventListener("pointerout",e=>{const to=e.relatedTarget&&e.relatedTarget.closest&&e.relatedTarget.closest(".fold[data-open]");if(!to){hvCur=null;hvHide()}});
-$("#cats").addEventListener("focusin",e=>{const f=e.target.closest(".fold[data-open]");if(!f)return;const p=projs().find(x=>x.id===f.dataset.open);if(p&&p.files.length&&!TOUCH)hvShow(safe(p.hv)||coverOf(p))});
-$("#cats").addEventListener("focusout",()=>{hvCur=null;hvHide()});
+$("#cats").addEventListener("pointerover",e=>{if(e.pointerType!=="mouse")return;const f=e.target.closest(".fold[data-open]");if(!f||f===hvCur)return;hvCur=f;const p=projs().find(x=>x.id===f.dataset.open);if(p&&p.files.length){HV.keep=safe(p.hv)||coverOf(p);hvShow(HV.keep)}});
+$("#cats").addEventListener("pointerout",e=>{const to=e.relatedTarget&&e.relatedTarget.closest&&e.relatedTarget.closest(".fold[data-open]");if(!to)hvCur=null});
+$("#cats").addEventListener("focusin",e=>{const f=e.target.closest(".fold[data-open]");if(!f)return;const p=projs().find(x=>x.id===f.dataset.open);if(p&&p.files.length&&!TOUCH){HV.keep=safe(p.hv)||coverOf(p);hvShow(HV.keep)}});
+$("#cats").addEventListener("focusout",()=>{hvCur=null});
 const tickC=()=>{$("#clock").textContent=new Date().toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})};tickC();setInterval(tickC,15000);
 
 /* score */
@@ -1904,10 +1905,10 @@ function mxOpen(p,mid){const mxP=(...a)=>{try{window.mxProg&&window.mxProg(...a)
   b.classList.add("mxsuck");try{sfx.trans()}catch(e){}await sleep(560);
   await mid();hvHide();HV.cx=HV.cy=null;HV.sc=1;HV.fso=0;HV.rstyle=null;HV.ph=0;lab.className="";mxP(null);
   b.classList.remove("wel","mxsuck");setTimeout(()=>b.classList.remove("mxdive"),50);done()})}
-async function openProject(id){const p=projs().find(x=>x.id===id);if(!p)return;closeAllWins();hvHide();sfx.open();
+async function openProject(id){const p=projs().find(x=>x.id===id);if(!p)return;closeAllWins();HV.block=true;clearTimeout(HV.kt);hvHide();sfx.open();
   await mxOpen(p,async()=>{renderPres(id);document.body.classList.add("pres-open");P.scrollTop=0;onPS()});addScore("p",id,500);
   try{history.replaceState(null,"","#p-"+id)}catch(e){}P.focus({preventScroll:true})}
-async function closeProject(){if(!cur)return;sfx.trans();const p=projs().find(x=>x.id===cur);await gameT(p,async()=>{document.body.classList.remove("pres-open");P.innerHTML="";clearInterval(encT);clearInterval(typeT);cur=null;R.on=true;if(!document.body.classList.contains("os"))enterOS(true)},true);
+async function closeProject(){if(!cur)return;sfx.trans();const p=projs().find(x=>x.id===cur);await gameT(p,async()=>{document.body.classList.remove("pres-open");HV.block=false;setTimeout(hvKeepShow,450);P.innerHTML="";clearInterval(encT);clearInterval(typeT);cur=null;R.on=true;if(!document.body.classList.contains("os"))enterOS(true)},true);
   try{history.replaceState(null,"",location.pathname+location.search)}catch(e){}}
 P.setAttribute("tabindex","-1");
 const BUB=$("#bub");BUB.textContent="INSPECTER";
