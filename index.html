@@ -1339,6 +1339,16 @@ const FOLDER=`<svg viewBox="0 0 76 62" aria-hidden="true"><path d="M2 10h24l6 7h
 const LOCK=`<svg viewBox="0 0 76 62" aria-hidden="true"><path d="M2 10h24l6 7h42v43H2z" fill="none" stroke="currentColor" stroke-width="2.4" stroke-dasharray="5 4"/><rect x="28" y="32" width="20" height="16" fill="currentColor" opacity=".5"/><path d="M32 32v-5a6 6 0 0 1 12 0v5" fill="none" stroke="currentColor" stroke-width="2.4"/></svg>`;
 const PLUS=`<svg viewBox="0 0 76 62" aria-hidden="true"><path d="M2 10h24l6 7h42v43H2z" fill="none" stroke="currentColor" stroke-width="2" stroke-dasharray="4 4"/><path d="M38 28v20M28 38h20" stroke="currentColor" stroke-width="3"/></svg>`;
 const ICO={game:'<rect x="6" y="20" width="36" height="20" rx="3" fill="currentColor" opacity=".18" stroke="currentColor" stroke-width="2.4"/><path d="M24 20V11" stroke="currentColor" stroke-width="2.4"/><circle cx="24" cy="9" r="4" fill="currentColor"/><path d="M13 30h8M17 26v8" stroke="currentColor" stroke-width="2.4"/><circle cx="32" cy="28" r="2" fill="currentColor"/><circle cx="36" cy="32" r="2" fill="currentColor"/>',txt:'<path d="M10 4h20l8 8v32H10z" fill="currentColor" opacity=".18" stroke="currentColor" stroke-width="2.4"/><path d="M16 20h16M16 27h16M16 34h10" stroke="currentColor" stroke-width="2.4"/>',exe:'<rect x="4" y="8" width="40" height="32" fill="currentColor" opacity=".18" stroke="currentColor" stroke-width="2.4"/><path d="M4 16h40M10 24l6 5-6 5M20 34h10" fill="none" stroke="currentColor" stroke-width="2.4"/>',pdf:'<path d="M10 4h20l8 8v32H10z" fill="none" stroke="currentColor" stroke-width="2.4"/><text x="24" y="34" text-anchor="middle" font-family="VT323" font-size="14" fill="currentColor">PDF</text>',gear:'<circle cx="24" cy="24" r="8" fill="none" stroke="currentColor" stroke-width="3"/><path d="M24 6v8M24 34v8M6 24h8M34 24h8M11 11l6 6M31 31l6 6M37 11l-6 6M17 31l-6 6" stroke="currentColor" stroke-width="3.5"/>'};
+/* icônes système en pixel art (16x16 -> 48) */
+{const PAL={G:"#00ff41",D:"#0b7a2c",S:"#c8ffd6",K:"#03170a",W:"#ffffff",R:"#ff3355",Y:"#ffd400"};
+ const PX=(rows)=>{let o='<g shape-rendering="crispEdges">';rows.forEach((r,y)=>{let x=0;while(x<16){const c=r[x];if(c==="."){x++;continue}let e=x;while(e<16&&r[e]===c)e++;o+=`<rect x="${x*3}" y="${y*3}" width="${(e-x)*3}" height="3" fill="${PAL[c]}"/>`;x=e}});return o+"</g>"};
+ Object.assign(ICO,{
+ p1:PX(["................","....GGGGGGGG....","...GGGGGGGGGG...","..GGGGGGGGGGGG..","..GGDDDDDDDDGG..","..GDSSSSSSSSDG..","..DSSKKSSKKSSD..","..DSSKWSSKWSSD..","..DSSSSSSSSSSD..","...DSSSKKSSSD...","...DSSSSSSSSD...","....DDSSSSDD....",".....DSSSSD.....","..GGGGDDDDGGGG..",".GGGGGGGGGGGGGG.",".GGGGGGGGGGGGGG."]),
+ qm:PX(["................",".....GGGGGG.....","....GWWGGGGG....","...GWG....GGG...","...GGG....GGG...","...DDD....GGG...",".........GGG....","........GGG.....",".......GGG......","......GGD.......","......GGG.......","......DDD.......","................","......GWG.......","......GGG.......","......DDD......."]),
+ mail:PX(["............RR..","...........RWWR.","...........RWWR.","............RR..",".GGGGGGGGGGGGGG.",".GGWDKKKKKKDWGG.",".GKGWDKKKKDWGKG.",".GKKGWDKKDWGKKG.",".GKKKGWGGWGKKKG.",".GKKKDGGGGDKKKG.",".GKKD..GG..DKKG.",".GKD........DKG.",".GD..........DG.",".GGGGGGGGGGGGGG.","................","................"]),
+ ship:PX([".......WW.......",".......GG.......","......GGGG......","......GWWG......","......GSWG......",".....GGGGGG.....",".D...GGDDGG...D.",".G..GGGGGGGG..G.",".G.GGGGGGGGGG.G.",".GGGGGDGGDGGGGG.",".GGGGG.GG.GGGGG.",".GGD..GGGG..DGG.",".G....D..D....G.","......R..R......","......Y..Y......","......Y..Y......"])});
+ Object.values(PAL);}
+
 const projs=()=>C.projects;
 const imgs=p=>p.files.filter(f=>f.t==="img");
 function coverOf(p){const f=p.files[p.cover|0]||p.files[0];return f?safe(f.t==="vid"?f.th:(f.th||f.u)):""}
@@ -1354,9 +1364,9 @@ function renderDesk(){const s=C.site;
       return `<button class="fold${enc?" enc":""}" data-open="${esc(p.id)}" data-cat="${esc(p.cat||"AUTRES")}">${enc?LOCK:FOLDER}<span class="fk">${pad(ci+1)} · ${esc(p.cat||"AUTRES")}</span><span class="fn">${esc(p.short||p.title)}</span><span class="fc">${enc?"CHIFFRÉ · bientôt":n+" fichier"+(n>1?"s":"")+(safe(p.link)?" · ▶ clip":"")}</span>${p.fav&&!enc?`<span class="favm" aria-label="À la une">★</span>`:""}${edit&&!enc?`<span class="fav${p.fav?" on":""}" data-fav="${esc(p.id)}" role="button" tabindex="0" aria-label="${p.fav?"Retirer de la une":"Mettre à la une"}">${p.fav?"★":"☆"}</span>`:""}</button>`};
   const cf=DSK.cat&&cats.includes(DSK.cat)?DSK.cat:"";
   $("#cats").innerHTML=favHTML+`<div class="cat"><h2>&gt; DOSSIERS <span>[${projs().length}]</span></h2><div class="cfil" role="group" aria-label="Filtrer par catégorie"><button class="cfb${cf?"":" on"}" data-cf="" aria-pressed="${!cf}">TOUT</button>${cats.map((c,ci)=>`<button class="cfb${cf===c?" on":""}" data-cf="${esc(c)}" aria-pressed="${cf===c}">${pad(ci+1)} ${esc(c)} <i>${projs().filter(p=>(p.cat||"AUTRES")===c).length}</i></button>`).join("")}</div><div class="frow">${projs().filter(p=>!cf||(p.cat||"AUTRES")===cf).map(tile).join("")}${edit?cats.filter(c=>!cf||c===cf).map(c=>`<button class="fold slot" data-slot="${esc(c)}">${PLUS}<span class="fk">${esc(c)}</span><span class="fn">EMPLACEMENT LIBRE</span><span class="fc">nouveau projet</span></button>`).join(""):""}</div></div>`;requestAnimationFrame(constellate);
-  const side=[["about","PLAYER_1.sav","txt"],["services","???.dat","txt"],["contact","CONTACT.exe","exe"],["game","ARCADE.exe","game"]];
+  const side=[["about","PLAYER_1.sav","p1"],["services","???.dat","qm"],["contact","CONTACT.exe","mail"],["game","ARCADE.exe","ship"]];
   if(safe(s.cv))side.push(["cv","CV.pdf","pdf"]);if(edit)side.push(["settings","RÉGLAGES","gear"]);
-  {const SD={about:"profil · inventaire · histoire",services:"objets trouvés",contact:"me joindre",game:"4 jeux · STAR WAR · +score",cv:"curriculum",settings:"réglages"};$("#side").innerHTML=`<p class="sdh">// SYSTÈME</p>`+side.map(([k,l,i])=>`<button class="ico" data-win="${k}"><svg viewBox="0 0 48 48" aria-hidden="true">${ICO[i]}</svg><span class="sdt"><span>${esc(l)}</span><small>${SD[k]||""}</small></span></button>`).join("")}
+  {const SD={about:"profil · inventaire · histoire",services:"objets trouvés",contact:"me joindre",game:"4 jeux · STAR WAR · +score",cv:"curriculum",settings:"réglages"};$("#side").innerHTML=`<p class="sdh">// SYSTÈME</p>`+side.map(([k,l,i])=>`<button class="ico" data-win="${k}"><i class="orb"><svg viewBox="0 0 48 48" aria-hidden="true">${ICO[i]}</svg></i><span class="sdt"><span>${esc(l)}</span><small>${SD[k]||""}</small></span></button>`).join("")}
   const full=projs().filter(p=>p.files.length).length,enc=projs().length-full,nimg=projs().reduce((a,p)=>a+imgs(p).length,0);
   const logs=[`<b>▶ START</b> · explore les dossiers pour marquer des points`,...(s.dispo?[`statut : <b>${esc(s.status||"")}</b> · recherche <b>${esc(s.dispo)}</b>`]:[]),`astuce : passe la souris sur un dossier pour <b>révéler</b> son image`,`ouvre un dossier : <b>+500</b> points`,`inspecte une photo : <b>+100</b> points`,`lance une vidéo : <b>+200</b> points`,`ouvre À propos, Services ou Contact : <b>+50</b> points`,`clique n'importe où pour <b>réveiller le réseau</b>`,`borne <b>ARCADE.exe</b> : 3 jeux, ton score s'ajoute au tien`,`bouge la souris sur le fond pour faire apparaître le filet`,`<b>${projs().length}</b> dossiers à explorer`,`<b>${enc}</b> dossier${enc>1?"s":""} verrouillé${enc>1?"s":""} · reviens bientôt`,`<b>${nimg}</b> images à découvrir`,`réalisation · cadrage · photo · montage · <b>Toulouse</b>`];
   const t=logs.map(l=>`<span>&gt; ${l}</span>`).join("");const tk=$("#tick .tk");tk.innerHTML=t+t;requestAnimationFrame(()=>{const w=tk.scrollWidth/2;if(w>0)tk.style.setProperty("--dur",Math.round(w/65)+"s")});
@@ -2506,6 +2516,34 @@ body #mxbar.ok{box-shadow:0 0 0 1px rgba(0,255,65,.4)!important}
 #side .ico[data-win="about"] .sdt>span{color:#eaffef}
 @media (max-width:860px){#side{grid-template-columns:1fr 1fr!important;display:grid!important}#side .sdh{grid-column:1/-1}#side .ico{padding:10px!important}#side .ico svg{width:30px!important;height:30px!important}}
 
+
+/* ===== HUB SYSTÈME : icônes pixel flottantes tenues par le réseau ===== */
+body #side .ico .orb{position:relative;display:grid;place-items:center;flex:none;font-style:normal}
+body #side .ico svg{image-rendering:pixelated}
+body #side .ico .orb::before{content:"";position:absolute;inset:-22%;border-radius:50%;background:radial-gradient(circle,rgba(0,6,2,.96) 0 52%,rgba(0,6,2,.7) 64%,transparent 72%);box-shadow:0 0 0 1px rgba(0,255,65,.35),0 0 24px rgba(0,255,65,.18);z-index:-1;transition:box-shadow .2s}
+@media (min-width:1000px){
+body #desk{grid-template-columns:minmax(0,1fr) clamp(330px,34vw,600px)!important}
+body #desk>.idb{grid-column:1;grid-row:1}
+body #side{grid-column:2!important;grid-row:1!important;display:block!important;position:relative;align-self:stretch;min-height:440px;width:auto!important;overflow:visible;animation:none}
+body #cats{grid-column:1/-1!important;grid-row:2!important}
+body #side .sdh{position:absolute;left:0;top:0;margin:0;z-index:2}
+body #side .hubcv{position:absolute;left:-90px;top:-40px;width:calc(100% + 90px + max(3vw,16px));height:calc(100% + 80px);pointer-events:none;z-index:0;-webkit-mask-image:radial-gradient(ellipse 62% 58% at 58% 50%,#000 55%,transparent 100%);mask-image:radial-gradient(ellipse 62% 58% at 58% 50%,#000 55%,transparent 100%)}
+body #side .ico{position:absolute!important;left:var(--hx);top:var(--hy);width:auto!important;padding:0!important;border:none!important;background:none!important;box-shadow:none!important;flex-direction:column!important;align-items:center;gap:12px!important;text-align:center;translate:-50% -50%;z-index:1;animation:hubfloat var(--hd,5s) ease-in-out var(--hdl,0s) infinite alternate}
+body #side .ico.hasnew{animation:hubfloat var(--hd,5s) ease-in-out var(--hdl,0s) infinite alternate}
+body #side .ico.hasnew .orb::before{box-shadow:0 0 0 2px #fff,0 0 30px rgba(0,255,65,.7)}
+body #side .ico::after{display:none!important}
+body #side .ico svg{width:clamp(58px,5.6vw,92px)!important;height:clamp(58px,5.6vw,92px)!important;filter:drop-shadow(0 0 6px rgba(0,255,65,.8)) drop-shadow(0 6px 10px rgba(0,0,0,.9))!important;transition:transform .2s,filter .2s}
+body #side .ico .sdt{align-items:center;padding:3px 8px;background:rgba(0,6,2,.82)!important;box-shadow:0 0 0 1px rgba(0,255,65,.22)}
+body #side .ico .sdt>span{font:400 clamp(19px,1.6vw,25px)/1 VT323,monospace!important}
+body #side .ico small{font-size:7px!important;white-space:nowrap}
+body #side .ico:hover,body #side .ico:focus-visible{background:none!important;box-shadow:none!important;outline:none}
+body #side .ico:hover svg,body #side .ico:focus-visible svg{transform:scale(1.16);filter:drop-shadow(0 0 12px #00ff41) drop-shadow(0 0 2px #fff)!important}
+body #side .ico:hover .orb::before,body #side .ico:focus-visible .orb::before{box-shadow:0 0 0 1px #b6ffcb,0 0 40px rgba(0,255,65,.55)}
+body #side .ico:hover .sdt,body #side .ico:focus-visible .sdt{background:rgba(0,30,10,.9)!important;box-shadow:0 0 0 1px #00ff41!important}
+}
+@keyframes hubfloat{0%{transform:translate(0,-5px) rotate(-1.5deg)}100%{transform:translate(0,7px) rotate(1.5deg)}}
+@media (max-width:999px){body #side .ico .orb::before{inset:-14%}body #side .ico svg{width:34px!important;height:34px!important}body #side .ico{overflow:hidden;gap:10px!important}body #side .ico .sdt>span{font-size:15px!important;white-space:nowrap}body #side .ico{padding:10px 8px!important}body #side .ico small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}body #side .ico .sdt{min-width:0}}
+@media (prefers-reduced-motion:reduce){body #side .ico{animation:none!important}}
 </style>
 
 <script>/* survol de ???.dat : des points d'interrogation se dessinent dans la matrice, comme les avions */
@@ -2561,6 +2599,58 @@ const isP=el=>el&&el.closest&&el.closest('.ico[data-win="about"],.tb[data-win="a
 document.addEventListener("pointerover",e=>{const t=isP(e.target);if(t&&!t.contains(e.relatedTarget))start()});
 document.addEventListener("pointerout",e=>{const t=isP(e.target);if(t&&!t.contains(e.relatedTarget))stop()});
 document.addEventListener("focusin",e=>{if(isP(e.target)){start();setTimeout(stop,1800)}});})();
+</script>
+
+<script>
+/* ===== HUB SYSTÈME : tentacules qui tiennent les icônes + arcs électriques ===== */
+(()=>{const side=document.getElementById("side");if(!side)return;
+const POS=[[.24,.34],[.74,.22],[.30,.80],[.78,.70],[.52,.98],[.12,1.04]];
+const RM=matchMedia("(prefers-reduced-motion:reduce)");
+let cv=document.createElement("canvas");cv.className="hubcv";cv.setAttribute("aria-hidden","true");const g=cv.getContext("2d");
+let W=0,H=0,DPR=Math.min(1.5,devicePixelRatio||1),vis=true,last=0,arcT=0,arcs=[],hov=-1;
+const rnd=(s)=>{let h=s*2654435761>>>0;return()=>{h^=h<<13;h^=h>>>17;h^=h<<5;return((h>>>0)%10000)/10000}};
+function place(){const ic=[...side.querySelectorAll(".ico")];ic.forEach((b,i)=>{const p=POS[i]||[.5,.5];b.style.setProperty("--hx",(p[0]*100)+"%");b.style.setProperty("--hy",(p[1]*100)+"%");b.style.setProperty("--hd",(4.2+i*.7)+"s");b.style.setProperty("--hdl",(-i*1.3)+"s");
+  b.onpointerenter=()=>hov=i;b.onpointerleave=()=>{if(hov===i)hov=-1}});return ic}
+function on(){return innerWidth>=1000&&getComputedStyle(side).display!=="none"}
+/* tentacules : 3 par icône, ancrées hors du panneau, la pointe s'enroule autour de l'icône */
+function tents(n){const T=[];for(let i=0;i<n;i++){const r=rnd(i+7);for(let k=0;k<3;k++){const a=(k/3)*Math.PI*2+r()*1.4+i;T.push({i,ax:r(),ay:r(),edge:Math.floor(r()*4),th:a,sw:(r()>.5?1:-1)*(1.6+r()*1.4),ph:r()*6.28,sp:.4+r()*.5,w:1.6+r()*1.6})}}return T}
+let T=[],nIc=0;
+function anchor(t){/* point d'ancrage sur les bords, surtout à gauche / en haut / à droite */
+  const e=t.edge;return e===0?[t.ax*W,-20]:e===1?[W+20,t.ay*H]:e===2?[t.ax*W,H+20]:[-20,t.ay*H*.8]}
+function curve(t,c,R,tm){const [ax,ay]=anchor(t),wob=Math.sin(tm*t.sp+t.ph),th0=t.th+wob*.35,ex=c[0]+Math.cos(th0)*R,ey=c[1]+Math.sin(th0)*R;
+  const pts=[],N=26;const mx=(ax+ex)/2+Math.sin(tm*.7+t.ph)*40,my=(ay+ey)/2+Math.cos(tm*.6+t.ph)*40;
+  for(let s=0;s<=N;s++){const u=s/N,x=(1-u)*(1-u)*ax+2*(1-u)*u*mx+u*u*ex,y=(1-u)*(1-u)*ay+2*(1-u)*u*my+u*u*ey;pts.push([x,y])}
+  const M=16;for(let s=1;s<=M;s++){const u=s/M,a=th0+t.sw*u,rr=R*(1-.12*u);pts.push([c[0]+Math.cos(a)*rr,c[1]+Math.sin(a)*rr])}return pts}
+function stroke(pts,w0,w1,col){for(let s=1;s<pts.length;s++){const u=s/pts.length;g.lineWidth=w0+(w1-w0)*u;g.strokeStyle=col;g.beginPath();g.moveTo(pts[s-1][0],pts[s-1][1]);g.lineTo(pts[s][0],pts[s][1]);g.stroke()}}
+function bolt(a,b,amp){const d=Math.hypot(b[0]-a[0],b[1]-a[1]),n=Math.max(4,Math.round(d/18)),nx=-(b[1]-a[1])/d,ny=(b[0]-a[0])/d,p=[a];for(let s=1;s<n;s++){const u=s/n,o=(Math.random()-.5)*amp*Math.sin(u*Math.PI);p.push([a[0]+(b[0]-a[0])*u+nx*o,a[1]+(b[1]-a[1])*u+ny*o])}p.push(b);return p}
+function line(p){g.beginPath();g.moveTo(p[0][0],p[0][1]);for(const q of p)g.lineTo(q[0],q[1]);g.stroke()}
+function frame(now){requestAnimationFrame(frame);if(!vis||document.hidden)return;if(now-last<33)return;last=now;
+  if(!on()){if(cv.isConnected)cv.remove();return}
+  if(!cv.isConnected){side.prepend(cv)}
+  const ic=[...side.querySelectorAll(".ico")];if(ic.length!==nIc||!ic[0].style.getPropertyValue("--hx")){place();nIc=ic.length;T=tents(nIc)}
+  const r=cv.getBoundingClientRect();if(Math.round(r.width*DPR)!==cv.width||Math.round(r.height*DPR)!==cv.height){cv.width=Math.round(r.width*DPR);cv.height=Math.round(r.height*DPR)}
+  W=r.width;H=r.height;g.setTransform(DPR,0,0,DPR,0,0);g.clearRect(0,0,W,H);
+  const C=ic.map(b=>{const o=b.querySelector(".orb").getBoundingClientRect();return[o.left+o.width/2-r.left,o.top+o.height/2-r.top,o.width*.72]});
+  const tm=RM.matches?0:now/1000;g.lineCap="round";
+  /* tentacules */
+  for(const t of T){const c=C[t.i];if(!c)continue;const pts=curve(t,c,c[2],tm),hot=t.i===hov;
+    stroke(pts,t.w*3.2,t.w*1.4,hot?"rgba(0,255,65,.16)":"rgba(0,255,65,.07)");
+    stroke(pts,t.w,t.w*.55,hot?"rgba(120,255,160,.85)":"rgba(0,220,60,.5)");
+    /* influx qui remonte vers l'icône */
+    const k=Math.floor(((tm*.5+t.ph)%1)*pts.length),q=pts[Math.min(k,pts.length-1)];g.fillStyle=hot?"#fff":"rgba(200,255,214,.85)";g.fillRect(q[0]-1.5,q[1]-1.5,3,3)}
+  /* arcs électriques : entre icônes voisines et des pointes vers le centre */
+  if(now-arcT>(RM.matches?1e9:70)){arcT=now;arcs=[];const n=C.length;
+    for(let a=0;a<n;a++)for(let b=a+1;b<n;b++){if(Math.random()<(a===hov||b===hov?.9:.42)){const A=C[a],B=C[b],ang=Math.atan2(B[1]-A[1],B[0]-A[0]);arcs.push({p:bolt([A[0]+Math.cos(ang)*A[2],A[1]+Math.sin(ang)*A[2]],[B[0]-Math.cos(ang)*B[2],B[1]-Math.sin(ang)*B[2]],26),hot:a===hov||b===hov})}}
+    C.forEach((c,i)=>{if(Math.random()<.5){const a=Math.random()*6.28,r2=c[2]*(1.25+Math.random()*.5);arcs.push({p:bolt([c[0]+Math.cos(a)*c[2]*1.02,c[1]+Math.sin(a)*c[2]*1.02],[c[0]+Math.cos(a+.6)*r2,c[1]+Math.sin(a+.6)*r2],8),hot:i===hov})}})}
+  for(const a of arcs){g.lineWidth=a.hot?5:3.5;g.strokeStyle=a.hot?"rgba(0,255,65,.28)":"rgba(0,255,65,.13)";line(a.p);g.lineWidth=a.hot?1.6:1;g.strokeStyle=a.hot?"rgba(255,255,255,.95)":"rgba(200,255,214,.6)";line(a.p)}
+  /* nœud central : le point d'interconnexion */
+  if(C.length>1){const cx=C.reduce((s,c)=>s+c[0],0)/C.length,cy=C.reduce((s,c)=>s+c[1],0)/C.length,pu=3+Math.sin(tm*4)*1.2;
+    g.fillStyle="rgba(0,255,65,.18)";g.beginPath();g.arc(cx,cy,pu*4,0,7);g.fill();g.fillStyle="#d6ffe0";g.beginPath();g.arc(cx,cy,pu,0,7);g.fill();
+    g.lineWidth=1;g.strokeStyle="rgba(150,255,180,.35)";if(Math.random()<.6)C.forEach(c=>{if(Math.random()<.5)line(bolt([cx,cy],c,14))})}
+}
+if("IntersectionObserver" in window)new IntersectionObserver(e=>{vis=e[0].isIntersecting}).observe(side);
+requestAnimationFrame(frame);
+})();
 </script>
 </body>
 </html>
