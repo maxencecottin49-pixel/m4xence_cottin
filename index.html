@@ -1533,7 +1533,7 @@ function ptsFx(v){const after=SC.s,before=after-v;
   else{tone(1174.66,.05,"square",.035);setTimeout(()=>tone(v>=200?1760:1396.91,.09,"square",.035),55)}
   const a=lvInfo(after),b=lvInfo(before);if(a.n>b.n)setTimeout(()=>palier(a.n),180)}
 let PAL=null;
-function palier(n){if(PAL){PAL.q=n;return}if(RM){toast(`★ NIVEAU ${n} · ${lvInfo(SC.s).name}`);return}
+function palier(n){/* animation de passage de niveau retirée : simple notification */toast(`★ NIVEAU ${n} · ${lvInfo(SC.s).name}`);return;if(PAL){PAL.q=n;return}
   const mk=id=>{const c=document.createElement("canvas");c.id=id;c.className="mxo";c.setAttribute("aria-hidden","true");document.body.appendChild(c);return c};
   const cv=document.getElementById("palfx")||mk("palfx"),W=innerWidth,H=innerHeight,dpr=Math.min(devicePixelRatio||1,1.5);cv.width=Math.ceil(W*dpr);cv.height=Math.ceil(H*dpr);cv.classList.add("on");
   const x=cv.getContext("2d");x.setTransform(dpr,0,0,dpr,0,0);x.clearRect(0,0,W,H);const st=W<700?9:12,r=Math.random;PAL={q:0};
