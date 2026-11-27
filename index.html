@@ -1841,7 +1841,7 @@ function updEnd(){const p=projs().find(x=>x.id===cur);if(!p)return;const all=p.f
 function typeIt(box){const tx=$(".tx",box),t=box.dataset.t;if(RM){tx.textContent=t;return}let i=0;clearInterval(typeT);typeT=setInterval(()=>{i+=2;tx.textContent=t.slice(0,i);if(i%6===0)sfx.blip();if(i>=t.length){tx.textContent=t;clearInterval(typeT)}},28)}
 
 /* ===== PAGE PROJET v2 : héros plein écran, intro, galerie en rangées justifiées sans trou ===== */
-function gxFig(f,i,cls){const ar=f.w&&f.h?f.w/f.h:1.5;return `<figure class="gxi${cls?" "+cls:""}" tabindex="0" data-i="${i}" data-ar="${ar.toFixed(4)}"><img src="${esc(safe(f.u))}" alt="${esc(f.n||"")}" loading="lazy" decoding="async"${f.w?` width="${f.w}" height="${f.h}"`:""}><span class="gxn">${pad(i+1)}</span>${fxBtns(i)}</figure>`}
+function gxFig(f,i,cls){const ar=f.w&&f.h?f.w/f.h:1.5;return `<figure class="gxi${cls?" "+cls:""}" tabindex="0" data-i="${i}" data-ar="${ar.toFixed(4)}" style="--ar:${ar.toFixed(4)}"><img src="${esc(safe(f.u))}" alt="${esc(f.n||"")}" loading="lazy" decoding="async"${f.w?` width="${f.w}" height="${f.h}"`:""}><span class="gxn">${pad(i+1)}</span>${fxBtns(i)}</figure>`}
 function gxHero(p){const cf=p.files[p.cover|0]||p.files[0],big=cf?safe(cf.t==="vid"?cf.th:cf.u):"",ci=projs().indexOf(p),ims=imgs(p),vids=p.files.filter(f=>f.t==="vid");
   const mainV=p.files.find(fl=>fl.t==="vid"&&fl.main),play=mainV||safe(p.link)?`<button class="gx-play" data-a="toclip">▶ ${esc(watchLabel(p))}</button>`:"";
   const meta=[p.cat,p.year,ims.length?ims.length+" photos":"",vids.length?vids.length+" vidéo"+(vids.length>1?"s":""):""].filter(Boolean);
@@ -2597,7 +2597,9 @@ body #mxbar.ok{box-shadow:0 0 0 1px rgba(0,255,65,.4)!important}
 .gxi.in{opacity:1;transform:none}
 .gx-rows .gxi:nth-child(3n+2){transition-delay:.08s}.gx-rows .gxi:nth-child(3n){transition-delay:.16s}
 .gxi img{display:block;width:100%;height:100%;object-fit:cover;transition:transform .9s cubic-bezier(.2,.7,.2,1),filter .4s}
-.gxi.lead{width:100%;aspect-ratio:21/9;max-height:78svh}
+.gx-lead{display:flex;justify-content:center}
+.gxi.lead{width:min(100%,calc(86svh * var(--ar)));height:auto;aspect-ratio:var(--ar)}
+.gxi.lead img{object-fit:contain}
 .gxi:hover img,.gxi:focus-visible img{transform:scale(1.035)}
 .gxi::after{content:"";position:absolute;inset:0;box-shadow:inset 0 0 0 0 #00ff41;transition:box-shadow .25s;pointer-events:none}
 .gxi:hover::after,.gxi:focus-visible::after{box-shadow:inset 0 0 0 2px #00ff41}
@@ -2616,7 +2618,7 @@ body #mxbar.ok{box-shadow:0 0 0 1px rgba(0,255,65,.4)!important}
 .gx-back{background:none;border:1px solid rgba(0,255,65,.4);color:#cfe9d6;font:400 20px/1 VT323,monospace;padding:10px 18px;cursor:pointer}
 .gx-back:hover{background:#00ff41;color:#000}
 #pres.v2 .vid,#pres.v2 .bri,#pres.v2 .rare,#pres.v2 .mk{background:#030604}
-@media (max-width:760px){.gx-in{grid-template-columns:1fr}.gxi.lead{aspect-ratio:4/3}.gx-cnt{display:none}.gx-hero{min-height:440px}}
+@media (max-width:760px){.gx-in{grid-template-columns:1fr}.gx-cnt{display:none}.gx-hero{min-height:440px}}
 @media (prefers-reduced-motion:reduce){.gx-hi,.gx-cue{animation:none}.gxi,.gx-chh{opacity:1;transform:none;transition:none}}
 
 body.gxv2 #prest{display:none!important}
