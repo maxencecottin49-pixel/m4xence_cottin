@@ -490,7 +490,7 @@ body.dogfight #rain{opacity:.3}#rain{transition:opacity .25s}
 #cats .frow.cst .cstl path.on{stroke:rgba(182,255,203,.95);stroke-width:1.6;stroke-dasharray:4 4;filter:drop-shadow(0 0 4px #00ff41)}
 #cats .frow.cst .cstl circle{fill:#d6ffe0;opacity:.75}
 @keyframes cstflow{to{stroke-dashoffset:-32}}
-#cats .frow.cst .fold{position:absolute!important;width:176px!important;min-height:0!important;padding:8px 4px!important;background:none!important;border:none!important;transform:translate(-50%,-50%);animation:cstfloat var(--fd,7s) ease-in-out infinite alternate;animation-delay:var(--fdl,0s);z-index:1}
+#cats .frow.cst .fold{position:absolute!important;width:200px!important;min-height:0!important;padding:8px 4px!important;background:none!important;border:none!important;transform:translate(-50%,-50%);animation:cstfloat var(--fd,7s) ease-in-out infinite alternate;animation-delay:var(--fdl,0s);z-index:1}
 #cats .frow.cst .fold svg{width:50px;height:auto;filter:drop-shadow(0 0 6px rgba(0,255,65,.55));transition:transform .25s,filter .25s}
 #cats .frow.cst .fold::before{content:"";position:absolute;left:50%;top:32px;width:12px;height:12px;margin:-6px 0 0 -6px;border-radius:50%;background:#00ff41;box-shadow:0 0 14px 4px rgba(0,255,65,.45);opacity:0;transition:opacity .25s}
 #cats .frow.cst .fold .fk,#cats .frow.cst .fold .fc{opacity:0;transition:opacity .2s}
@@ -1364,13 +1364,13 @@ function renderDesk(){const s=C.site;
 function cstHash(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return()=>{h^=h<<13;h^=h>>>17;h^=h<<5;return((h>>>0)%10000)/10000}}
 function constellate(){const fr=$("#cats .frow");if(!fr)return;if(innerWidth<600||document.body.classList.contains("edit")){fr.classList.remove("cst");return}
   const fs=[...fr.querySelectorAll(".fold")];if(fs.length<3){fr.classList.remove("cst");return}fr.classList.add("cst");
-  const W=fr.clientWidth,H=fr.clientHeight,n=fs.length,ar=W/H,ideal=Math.sqrt(n*ar);
+  const W=fr.clientWidth,n=fs.length,ideal=Math.max(2,W/235);let H=fr.clientHeight;
   /* nombre de colonnes : proche de l'idéal, en privilégiant des rangées pleines et équilibrées */
   let cols=2,best=1e9;for(let c=2;c<=Math.min(n,8);c++){const r=Math.ceil(n/c),gap=r*c-n,sc=Math.abs(c-ideal)+gap*.9;if(sc<best){best=sc;cols=c}}
-  const rows=Math.ceil(n/cols),cw=W/cols,ch=H/rows;
+  const rows=Math.ceil(n/cols),cw=W/cols;if(innerWidth>860){const nh=Math.round(rows*Math.min(270,Math.max(190,cw*.95))+30);if(Math.abs(fr.offsetHeight-nh)>2){fr.style.setProperty("height",nh+"px","important")}H=nh}const ch=H/rows;
   /* grille désordonnée et centrée : chaque rangée est centrée, même incomplète ; léger décalage stable */
   const slots=[];for(let r=0;r<rows;r++){const k=Math.min(cols,n-r*cols),off=(cols-k)/2;for(let c=0;c<k;c++)slots.push([c+off,r])}
-  const pts=fs.map((f,i)=>{const rnd=cstHash(f.dataset.open||String(i)),[c,r]=slots[i],x=(c+.5+(r%2?.12:-.12)+(rnd()-.5)*.3)*cw,y=(r+.5+(rnd()-.5)*.4)*ch;
+  const pts=fs.map((f,i)=>{const rnd=cstHash(f.dataset.open||String(i)),[c,r]=slots[i],x=(c+.5+(r%2?.07:-.07)+(rnd()-.5)*.16)*cw,y=(r+.5+(rnd()-.5)*.22)*ch;
     const px=Math.max(85,Math.min(W-85,x)),py=Math.max(60,Math.min(H-60,y));f.style.setProperty("--fd",(5+rnd()*5).toFixed(1)+"s");f.style.setProperty("--fdl",(-rnd()*6).toFixed(1)+"s");return{x:px,y:py,f,cat:f.dataset.cat,rnd}});
   {const xs=pts.map(p=>p.x),ys=pts.map(p=>p.y),dx=W/2-(Math.min(...xs)+Math.max(...xs))/2,dy=H/2-(Math.min(...ys)+Math.max(...ys))/2;pts.forEach(p=>{p.x+=dx;p.y+=dy;p.f.style.left=p.x+"px";p.f.style.top=p.y+"px"})}
   /* filaments : vers les 2 voisins les plus proches + entre dossiers de la même catégorie */
@@ -2070,7 +2070,7 @@ function metaDesk(){const s=C.site||{},idb=document.querySelector("#desk .idb");
     if(rows.length)idb.insertAdjacentHTML("beforeend",`<dl class="mkv">${rows.map((r,i)=>`<dt data-o="${"0x"+(16*(i+1)).toString(16).toUpperCase().padStart(2,"0")}">${r[0]}</dt><dd>${String(r[1]).replace(/[<>&]/g,"")}</dd>`).join("")}</dl>`);decode(idb,900)}
   document.querySelectorAll("#side .ico").forEach((b,i)=>{b.dataset.pid="PID "+String(240+i*17).padStart(4,"0")});
   document.querySelectorAll("#cats .fold[data-open]").forEach(f=>{if(f.querySelector(".fm"))return;const id=f.dataset.open,p=projs().find(x=>x.id===id);if(!p)return;const n=p.files.length,fn=f.querySelector(".fn");
-    if(fn&&!fn.dataset.o){fn.dataset.o=fn.textContent;fn.textContent=fn.textContent.trim().replace(/\s+/g,"_").toUpperCase()+".dir"}
+    if(fn&&!fn.dataset.o){fn.dataset.o=fn.textContent;fn.innerHTML=fn.textContent.trim().toUpperCase().split(/\s+/).map(w=>w.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))).join("_<wbr>")+".dir"}
     f.insertAdjacentHTML("beforeend",`<span class="fm">${H(id)} · ${n} obj · ${String(p.cat||"").toLowerCase()}</span>`)})}
 const mo=new MutationObserver(()=>{clearTimeout(mo.h);mo.h=setTimeout(metaDesk,30)});
 {const d=document.getElementById("desk");if(d)mo.observe(d,{childList:true,subtree:true});setTimeout(metaDesk,0)}
@@ -2353,7 +2353,7 @@ document.addEventListener("focusin",e=>{if(e.target.closest&&e.target.closest('.
 #cats .frow.cst .fold .fn{font-family:"IBM Plex Mono",monospace!important;font-size:14px!important;letter-spacing:.02em;color:var(--g2)}
 #cats .frow.cst .fold .fm{display:block;font:400 8px/1.6 "Press Start 2P",monospace;color:var(--gd);white-space:nowrap;text-shadow:0 0 6px #000}
 #cats .frow.cst .fold:hover .fm,#cats .frow.cst .fold:focus-visible .fm{color:var(--g)}
-#cats .frow.cst .fold svg{width:40px!important}
+#cats .frow.cst .fold svg{width:54px!important}
 #cats .fold .fm{display:none}
 /* fenêtres : fichiers ouverts */
 .win{background:rgba(0,9,3,.72)!important;border:none!important;box-shadow:0 0 60px rgba(0,255,65,.12),0 0 0 1px rgba(0,255,65,.18)!important;-webkit-backdrop-filter:blur(3px)!important;backdrop-filter:blur(3px)!important}
@@ -2661,6 +2661,12 @@ body.intro-on #bar>*:not(#logo){opacity:.55}
 #pres.v2 .hud{background:#000!important}
 #pres.v2 .gx-intro,#pres.v2 .gx-gal,#pres.v2 .gx-next,#pres.v2 .vid,#pres.v2 .bri,#pres.v2 .rare,#pres.v2 .mk,#pres.v2 .pfoot{background:#000!important}
 @media (max-width:760px){.gx-hero.split .gx-pic{left:16px;right:16px;top:16px;bottom:44%;max-width:none;justify-content:center}.gx-hero.split .gx-ht{max-width:none}}
+
+/* dossiers : toute la largeur sous les icônes système, constellation centrée */
+@media (min-width:861px){
+body #cats{grid-column:1/-1!important;grid-row:3!important;width:100%;max-width:1500px;justify-self:center}
+#cats .frow.cst{height:clamp(440px,58vh,640px)!important}
+}
 </style>
 
 <script>/* survol de ???.dat : des points d'interrogation se dessinent dans la matrice, comme les avions */
