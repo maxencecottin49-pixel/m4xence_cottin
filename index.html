@@ -1166,7 +1166,7 @@ function frame(t){const x=R.x;
   x.globalCompositeOperation="destination-out";x.fillStyle="rgba(0,0,0,.14)";x.fillRect(0,0,R.w,R.h);x.globalCompositeOperation="source-over";
   const hv=HV.a>.05&&HV.L&&HV.off?HV:null;
   for(const L of R.L){x.font=L.fs+"px VT323,monospace";for(let i=0;i<L.d.length;i++){const c=L.d[i],y=c.y*L.fs;if(y>0){let lv=0;if(hv){const cc=((i*L.fs-hv.ox)/hv.fs)|0,rr=((y-hv.oy)/hv.fs)|0;if(cc>=0&&rr>=0&&cc<hv.c&&rr<hv.r)lv=hv.L[rr*hv.c+cc]*hv.a}x.fillStyle=lv>.42?`rgba(${(150+100*lv)|0},255,${(170+80*lv)|0},${Math.min(1,L.a+lv*.55)})`:Math.random()<.07?`rgba(225,255,232,${L.a})`:`rgba(0,255,65,${L.a*.8})`;x.fillText(DIG[Math.random()*10|0],i*L.fs,y)}c.y+=c.v*R.sp;if(y>R.h&&Math.random()>.965){c.y=0;c.v=(.35+Math.random()*.8)*L.sp}}}
-  btDraw(x,t);hvDraw(x,t);decrypt(x,t);btFx(x,t)}
+  btDraw(x,t);hvDraw(x,t);ttDraw(x,t);decrypt(x,t);btFx(x,t)}
 
 /* ================= fond tentaculaire vivant ================= */
 const BT={list:[],bursts:[],pul:[],E:0,M:0,mx:-999,my:-999,ph:0,lt:0,w:0,h:0,st:10};
@@ -1990,6 +1990,62 @@ function digiImg(im,cols){const key=im.src+"|"+cols;if(MXO.dg.has(key))return MX
   for(let i=0;i<n;i++){let v=Math.min(1,Math.pow(.35*G[i]/255+.65*cdf[G[i]],.9)*1.08);v=v*v*(3-2*v)*.6+v*.4;L[i]=v;if(v<.08)continue;const x=i%cols,y=(i/cols)|0;
     ox.font=(cs*(.85+.45*v)).toFixed(1)+"px VT323,monospace";ox.fillStyle=v>.6?`rgba(${(170+85*v)|0},255,${(190+65*v)|0},${Math.min(1,.35+v)})`:`rgba(${(40*v)|0},${(130+150*v)|0},${(60+50*v)|0},${Math.min(1,.3+v*1.1)})`;ox.fillText(DIG[Math.random()*10|0],x*cs+cs/2,y*cs+cs/2+1)}
   const res={c:o,L,cols,rows};MXO.dg.set(key,res);return res}
+
+/* ================= texte tentaculaire : les lettres sont faites de tentacules de chiffres ================= */
+const TT={a:0,ta:0,o:null};
+function ttPrep(txt,cx,cy,maxW,maxH){return (async()=>{try{await Promise.race([document.fonts.load('800 80px Unbounded'),new Promise(r=>setTimeout(r,450))])}catch(e){}
+  const W=R.w,H=R.h,g=W<700?4.5:5,FF=z=>`800 ${z}px Unbounded,"Arial Black",Impact,sans-serif`,m=document.createElement("canvas").getContext("2d");
+  txt=String(txt).toUpperCase();const ws=txt.split(/\s+/).filter(Boolean);m.font=FF(100);const mw=z=>m.measureText(z).width/100;
+  let lines=[txt];if(ws.length>1&&mw(txt)>(maxW/maxH)*1.3){let best=null;for(let i=1;i<ws.length;i++){const a=ws.slice(0,i).join(" "),b=ws.slice(i).join(" "),q=Math.max(mw(a),mw(b));if(!best||q<best[0])best=[q,[a,b]]}lines=best[1]}
+  const lw=Math.max(...lines.map(mw)),lh=1.14;let F=Math.min(maxW/lw,maxH/(lines.length*lh));F=Math.max(F,g*8);
+  const pad=Math.ceil(F*.3/g),gw=Math.ceil(lw*F/g)+pad*2,gh=Math.ceil(lines.length*lh*F/g)+pad*2,n=gw*gh;
+  const mc=document.createElement("canvas");mc.width=gw;mc.height=gh;const mx=mc.getContext("2d");mx.fillStyle="#fff";mx.font=FF(F/g);mx.textAlign="center";mx.textBaseline="middle";
+  lines.forEach((l,i)=>mx.fillText(l,gw/2,pad+(i+.5)*lh*F/g));const id=mx.getImageData(0,0,gw,gh).data,D=new Float32Array(n);for(let i=0;i<n;i++)D[i]=id[i*4+3]>110?1e4:0;
+  /* distance au bord des lettres (chanfrein) : les tentacules suivent le cœur des fûts */
+  for(let y=0;y<gh;y++)for(let x=0;x<gw;x++){const i=y*gw+x;if(!D[i])continue;let v=D[i];if(x>0)v=Math.min(v,D[i-1]+1);else v=1;if(y>0){v=Math.min(v,D[i-gw]+1);if(x>0)v=Math.min(v,D[i-gw-1]+1.41);if(x<gw-1)v=Math.min(v,D[i-gw+1]+1.41)}else v=1;D[i]=v}
+  for(let y=gh-1;y>=0;y--)for(let x=gw-1;x>=0;x--){const i=y*gw+x;if(!D[i])continue;let v=D[i];if(x<gw-1)v=Math.min(v,D[i+1]+1);else v=1;if(y<gh-1){v=Math.min(v,D[i+gw]+1);if(x<gw-1)v=Math.min(v,D[i+gw+1]+1.41);if(x>0)v=Math.min(v,D[i+gw-1]+1.41)}else v=1;D[i]=v}
+  const at=(x,y)=>{x=x|0;y=y|0;return x<0||y<0||x>=gw||y>=gh?0:D[y*gw+x]};let dmax=1;for(let i=0;i<n;i++)if(D[i]>dmax)dmax=D[i];
+  const ox=cx-gw*g/2,oy=Math.max(cy-gh*g/2,(parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--barh"))||40)+6),cells=[],occ=new Map(),paths=[],R_=Math.random,ST=8;
+  const put=(x,y,s,a,k)=>{const gx=Math.round(x),gy=Math.round(y),kk=(gx+4096)*8192+gy+4096,o=occ.get(kk);if(o!==undefined){const c=cells[o];if(a>c.a)c.a=a;if(s<c.s)c.s=s;return}occ.set(kk,cells.length);cells.push({x:ox+gx*g,y:oy+gy*g,s,a,k})};
+  /* 1. dans les lettres : des tentacules qui serpentent le long des fûts et se tressent */
+  const ins=[];for(let i=0;i<n;i++)if(D[i]>=1)ins.push(i);const cov=new Uint8Array(n);let ncov=0;const mark=(x,y)=>{for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){const X=(x|0)+dx,Y=(y|0)+dy;if(X<0||Y<0||X>=gw||Y>=gh)continue;const j=Y*gw+X;if(D[j]&&!cov[j]){cov[j]=1;ncov++}}};
+  for(let w=0;w<900&&ins.length&&ncov<ins.length*.93;w++){let i0=ins[R_()*ins.length|0];for(let tr=0;tr<12&&cov[i0];tr++)i0=ins[R_()*ins.length|0];let x=i0%gw+.5,y=(i0/gw|0)+.5,hx=R_()-.5,hy=R_()-.5;{const l=Math.hypot(hx,hy)||1;hx/=l;hy/=l}
+    let s=R_()*300+Math.min(260,w*1.2);const L=22+R_()*60|0,ph=R_()*6.28,fr=.14+R_()*.2,path=[];
+    for(let k=0;k<L;k++){const gx_=at(x+1,y)-at(x-1,y),gy_=at(x,y+1)-at(x,y-1),gl=Math.hypot(gx_,gy_)||1;let tx=-gy_/gl,ty=gx_/gl;if(tx*hx+ty*hy<0){tx=-tx;ty=-ty}
+      const d=at(x,y),wc=d<1.8?.55:d<2.6?.18:0,wob=Math.sin(k*fr+ph)*.27;let nx=hx*.6+tx*.42+gx_/gl*wc,ny=hy*.6+ty*.42+gy_/gl*wc;const cs=Math.cos(wob),sn=Math.sin(wob),rx=nx*cs-ny*sn,ry=nx*sn+ny*cs,l2=Math.hypot(rx,ry)||1;hx=rx/l2;hy=ry/l2;
+      let px=x+hx*.85,py=y+hy*.85;if(!at(px,py)){hx=gx_/gl;hy=gy_/gl;px=x+hx*.85;py=y+hy*.85;if(!at(px,py))break}
+      x=px;y=py;s+=ST;mark(x,y);put(x,y,s,.5+.5*Math.min(1,at(x,y)/Math.max(2,dmax*.6)),0);path.push([ox+Math.round(x)*g,oy+Math.round(y)*g])}
+    if(path.length>6)paths.push(path)}
+  /* 2. des tentacules s'échappent des lettres et les relient au réseau de fond */
+  const edge=[];for(let i=0;i<n;i++)if(D[i]>0&&D[i]<1.5)edge.push(i);const NE=Math.min(24,6+edge.length/70|0);
+  for(let w=0;w<NE&&edge.length;w++){const i0=edge[R_()*edge.length|0];let x=i0%gw+.5,y=(i0/gw|0)+.5;const gx_=at(x+1,y)-at(x-1,y),gy_=at(x,y+1)-at(x,y-1);
+    let d=Math.atan2(-gy_,-gx_)+(R_()-.5)*.9,tr=(R_()-.5)*.05,s=260+R_()*520;const L=18+R_()*72|0,ph=R_()*6.28,path=[];
+    for(let k=0;k<L;k++){d+=tr+Math.sin(k*.15+ph)*.1;x+=Math.cos(d)*.9;y+=Math.sin(d)*.9;s+=ST*1.15;const X=ox+Math.round(x)*g,Y=oy+Math.round(y)*g;if(X<0||Y<0||X>W||Y>H)break;if(at(x,y))continue;put(x,y,s,.66*(1-k/L)+.1,1);path.push([X,Y])}
+    if(path.length>6)paths.push(path)}
+  cells.sort((a,b)=>a.s-b.s);for(let i=paths.length-1;i>0;i--){const j=R_()*(i+1)|0;[paths[i],paths[j]]=[paths[j],paths[i]]}
+  const dpr=Math.min(devicePixelRatio||1,2),off=document.createElement("canvas");off.width=Math.ceil(W*dpr);off.height=Math.ceil(H*dpr);const o=off.getContext("2d");o.setTransform(dpr,0,0,dpr,0,0);o.textAlign="center";o.textBaseline="middle";
+  return {cells,paths,off,o,g,i:0,t0:0,end:cells.length?cells[cells.length-1].s:0}})()}
+function ttCell(T,c){const o=T.o,g=T.g,a=c.a;o.clearRect(c.x-g*.6,c.y-g*.6,g*1.2,g*1.2);o.font=(g*(c.k?.95:1.1+.3*a)).toFixed(1)+"px VT323,monospace";
+  o.fillStyle=c.k?`rgba(${70+100*a|0},255,${110+80*a|0},${(.3+.6*a).toFixed(2)})`:a>.84?`rgba(228,255,236,${a.toFixed(2)})`:`rgba(${80+130*a|0},255,${120+100*a|0},${(.5+.5*a).toFixed(2)})`;o.fillText(DIG[Math.random()*10|0],c.x,c.y+1)}
+function ttStart(T){if(!T)return;T.t0=performance.now();TT.o=T;TT.ta=1;TT.a=Math.max(TT.a,.01);if(RM){for(const c of T.cells)ttCell(T,c);T.i=T.cells.length}}
+function ttHide(){TT.ta=0}
+function ttDraw(x,t){const T=TT.o;if(!T)return;TT.a+=(TT.ta-TT.a)*(TT.ta?.18:.11);if(!TT.ta&&TT.a<.015){TT.o=null;TT.a=0;return}
+  const reach=t-T.t0;while(T.i<T.cells.length&&T.cells[T.i].s<=reach)ttCell(T,T.cells[T.i++]);
+  const k=Math.min(T.i,70);for(let q=0;q<k;q++)ttCell(T,T.cells[Math.random()*T.i|0]);
+  x.save();x.globalAlpha=TT.a;x.drawImage(T.off,0,0,R.w,R.h);
+  if(!RM){x.textAlign="center";x.textBaseline="middle";x.font=(T.g*1.55).toFixed(1)+"px VT323,monospace";x.fillStyle="rgba(240,255,245,.95)";
+    for(let q=T.i-1,m=0;q>=0&&m<240;q--,m++){const c=T.cells[q];if(reach-c.s>50)break;x.fillText(DIG[Math.random()*10|0],c.x,c.y+1)}
+    if(reach>T.end*.55){const np=Math.min(T.paths.length,70);for(let q=0;q<np;q++){const P=T.paths[q],L=P.length,u=((t*.0009+q*.37)%1.7)/1.7*L|0;if(u<L)x.fillText(DIG[(q+u)%10],P[u][0],P[u][1]+1)}}}
+  x.restore()}
+/* deux photos réunies dans une seule image (fond noir = vide), pour les afficher ensemble, décalées */
+async function pairImg(u1,u2,mob){const [a,b]=await Promise.all([loadIm(u1,900),loadIm(u2,900)]);if(!a||!b)return u1||u2||"";
+  const CW=mob?900:1680,CH=mob?1250:700,c=document.createElement("canvas");c.width=CW;c.height=CH;const x=c.getContext("2d");x.fillStyle="#000";x.fillRect(0,0,CW,CH);
+  const box=mob?[[60,20,780,580],[60,650,780,580]]:[[30,10,780,620],[870,70,780,620]];
+  [a,b].forEach((im,i)=>{const [bx,by,bw,bh]=box[i],r=Math.min(bw/im.naturalWidth,bh/im.naturalHeight),w=Math.max(1,im.naturalWidth*r|0),h=Math.max(1,im.naturalHeight*r|0);
+    const t=document.createElement("canvas");t.width=w;t.height=h;const tx=t.getContext("2d");tx.drawImage(im,0,0,w,h);tx.globalCompositeOperation="destination-in";
+    tx.translate(w/2,h/2);tx.scale(w/2,h/2);const gr=tx.createRadialGradient(0,0,.42,0,0,1);gr.addColorStop(0,"#000");gr.addColorStop(1,"rgba(0,0,0,0)");tx.fillStyle=gr;tx.fillRect(-1,-1,2,2);
+    x.drawImage(t,bx+(bw-w)/2,by+(bh-h)/2)});
+  try{return c.toDataURL("image/jpeg",.86)}catch(e){return u1}}
 const TTL=new Map();
 async function titleImg(t,mob){const k=t+(mob?"|m":"");if(TTL.has(k))return TTL.get(k);try{try{await Promise.race([document.fonts.load('64px "Press Start 2P"'),new Promise(r=>setTimeout(r,500))])}catch(e){}
   const F=96,ff=`${F}px "Press Start 2P",monospace`,c=document.createElement("canvas"),x=c.getContext("2d");x.font=ff;const ws=t.split(/\s+/).filter(Boolean);let lines=[t];
@@ -1999,22 +2055,22 @@ async function titleImg(t,mob){const k=t+(mob?"|m":"");if(TTL.has(k))return TTL.
 function loadIm(u,ms){return new Promise(res=>{if(!u){res(null);return}const c=HV.cache.get(u);if(c&&c.complete&&c.naturalWidth){res(c);return}const im=new Image();let ok=0;im.onload=()=>{ok=1;res(im)};im.onerror=()=>res(null);im.src=u;if(!c)HV.cache.set(u,im);setTimeout(()=>{if(!ok)res(null)},ms)})}
 function mxOpen(p,mid){const mxP=(...a)=>{try{window.mxProg&&window.mxProg(...a)}catch(e){}};return new Promise(async done=>{MUS.boost=.7;
   if(RM){await mid();done();return}
-  hvHide();BT.E=.9;const W=innerWidth,H=innerHeight,mob=W<860,b=document.body;b.classList.add("wel","mxdive");
+  hvHide();BT.E=.5;const W=innerWidth,H=innerHeight,mob=W<860,b=document.body;b.classList.add("wel","mxdive");
   let lab=document.getElementById("mxl");if(!lab){lab=document.createElement("p");lab.id="mxl";lab.setAttribute("aria-hidden","true");b.appendChild(lab)}lab.className="on";
   const title=String(p.short||p.title).toUpperCase(),cvF=p.files[p.cover|0];
-  const pool=p.files.filter(f=>f.t==="img"&&f!==cvF).sort(()=>Math.random()-.5).slice(0,mob?1:2).map(f=>safe(f.th||f.u)).filter(Boolean);
+  const pool=p.files.filter(f=>f.t==="img"&&f!==cvF).sort(()=>Math.random()-.5).slice(0,2).map(f=>safe(f.th||f.u)).filter(Boolean);
   const coverU=safe(p.hv)||coverOf(p);lab.textContent=`> connexion au dossier ${title}…`;mxP(.04,"> connexion au dossier…",title);
   await Promise.all([...pool,coverU].map(u=>loadIm(u,700)));
   const sleep=ms=>new Promise(r=>setTimeout(r,ms)),n=pool.length,tot=n+(coverU?1:0);HV.soft=1;
-  /* 1. le nom du dossier s'écrit en chiffres, relié au réseau tentaculaire */
-  const TU=await titleImg(title,mob);if(TU){HV.O[TU]={fs:mob?4:5,net:1,ten:1.25,raw:1,k:1.08};HV.rstyle="code";HV.rdx=560;HV.cx=W/2;HV.cy=H*.46;HV.sc=mob?1:1.42;HV.fso=0;HV.url="";hvShow(TU,true);
-    lab.textContent=`> ${title}`;await sleep(950);hvHide();await sleep(200)}
-  /* 2. quelques photos seulement, en rythme : apparition, respiration, fondu */
-  const SP=mob?[[.5,.4]]:[[.32,.47],[.68,.5]];
-  for(let i=0;i<n;i++){HV.rstyle="code";HV.rdx=560;HV.cx=W*SP[i%SP.length][0];HV.cy=H*SP[i%SP.length][1];HV.sc=mob?.7:.7;HV.fso=mob?4:4.5;HV.url="";hvShow(pool[i],true);
-    lab.textContent=`> décryptage ${title}… ${pad(i+1)}/${pad(tot)}`;{const M=["> décryptage des métadonnées…","> extraction EXIF · ISO · focale…","> reconstruction des pixels…"];const f=p.files.filter(x=>x.t==="img")[i];mxP((i+1)/(tot+1),M[i%M.length],`${f?f.n:""} · ${f?f.w+"×"+f.h:""} · ${"0x"+(Math.random()*65535|0).toString(16).toUpperCase()}`)}sfx.blip();await sleep(640);hvHide();await sleep(220)}
-  /* 3. la couverture au centre */
-  if(coverU){HV.rstyle="code";HV.rdx=600;HV.cx=W/2;HV.cy=H*.48;HV.sc=mob?.92:1;HV.fso=mob?4:5;HV.url="";hvShow(coverU,true);btPulse(W/2,H/2,true);sfx.hover();lab.textContent=`> ${title} · ${pad(tot)}/${pad(tot)} · accès autorisé`;mxP(1,"> métadonnées déchiffrées · accès autorisé",`${title} · ${p.files.length} fichiers · ${String(p.cat||"").toLowerCase()}`);await sleep(880)}
+  /* 1. le nom du dossier (lettres tentaculaires) et deux photos apparaissent ensemble */
+  const [TX,PR]=await Promise.all([ttPrep(title,W/2,H*(mob?.2:.19),W*(mob?.94:.84),H*(mob?.2:.26)),n>=2?pairImg(pool[0],pool[1],mob):Promise.resolve(pool[0]||"")]);
+  ttStart(TX);lab.textContent=`> ${title}`;
+  if(PR){HV.rstyle="code";HV.rdx=700;HV.cx=W/2;HV.cy=H*(mob?.62:.61);HV.sc=n>=2?(mob?1.02:1.6):(mob?.72:.7);HV.fso=mob?4:4.6;HV.url="";hvShow(PR,true);
+    mxP(.5,"> décryptage des fichiers…",`${n} fichier${n>1?"s":""} · ${"0x"+(Math.random()*65535|0).toString(16).toUpperCase()}`);sfx.blip();await sleep(1650);hvHide();await sleep(280)}
+  else await sleep(900);
+  /* 2. la couverture, sous le titre */
+  if(coverU){HV.rstyle="code";HV.rdx=620;HV.cx=W/2;HV.cy=H*.61;HV.sc=mob?.8:.74;HV.fso=mob?4:5;HV.url="";hvShow(coverU,true);btPulse(W/2,H*.61,false);sfx.hover();lab.textContent=`> ${title} · accès autorisé`;mxP(1,"> métadonnées déchiffrées · accès autorisé",`${title} · ${p.files.length} fichiers · ${String(p.cat||"").toLowerCase()}`);await sleep(980)}
+  ttHide();
   HV.rdx=0;HV.soft=0;
   /* aspiration : le réseau plonge vers l'écran, puis la page s'ouvre */
   b.classList.add("mxsuck");try{sfx.trans()}catch(e){}await sleep(560);
@@ -2134,11 +2190,12 @@ async function welcome(){if(WEL)return;musStart();const tok={skip:0,stage:"mont"
   /* 1. montage : les images surgissent dans le réseau, à des endroits différents */
   if(!RM&&urls.length){const order=urls.slice().sort(()=>Math.random()-.5),W=innerWidth,H=innerHeight,mob=W<860,n=Math.min(mob?3:4,order.length),BEAT=600;
     /* rythme : une image toutes les 2 temps (100 BPM), apparition en pluie de code, respiration, fondu */
-    HV.soft=1;const nm=(C.site.name||"MAXENCE").toUpperCase(),TU=await titleImg(nm,mob);
-    if(TU&&!tok.skip){HV.O[TU]={fs:mob?4:5,net:1,ten:1.25,raw:1,k:1.08};HV.rstyle="code";HV.rdx=700;HV.cx=W/2;HV.cy=H*.47;HV.sc=mob?1:1.3;HV.fso=0;HV.url="";hvShow(TU,true);ld.textContent="> connexion…";await sleep(BEAT*2-250);hvHide();await sleep(250)}
-    const SPOT=mob?[[.5,.36],[.5,.64],[.5,.48]]:[[.3,.42],[.7,.57],[.42,.6],[.64,.4]];
-    for(let i=0;i<n&&!tok.skip;i++){const u=order[i];HV.rstyle="code";HV.rdx=620;HV.cx=W*SPOT[i][0];HV.cy=H*SPOT[i][1];HV.sc=mob?.64:.7;HV.fso=mob?4.5:5;HV.url="";hvShow(u,true);
-      {const an=Math.random()*6.283,rh=H*.43*HV.sc;btPulse(HV.cx+Math.cos(an)*rh*1.1,HV.cy+Math.sin(an)*rh,false)}ld.textContent=`> chargement des souvenirs… ${pad(i+1)}/${pad(n)}`;sfx.blip();await sleep(BEAT*2-260);if(i<n-1){hvHide();await sleep(260)}}
+    HV.soft=1;const nm=(C.site.name||"MAXENCE").toUpperCase(),pairs=[];for(let i=0;i+1<Math.min(4,order.length);i+=2)pairs.push([order[i],order[i+1]]);if(!pairs.length)pairs.push([order[0],order[0]]);
+    const [TX,P0]=await Promise.all([ttPrep(nm,W/2,H*(mob?.2:.2),W*(mob?.94:.62),H*(mob?.16:.17)),pairImg(pairs[0][0],pairs[0][1],mob)]);const P1=pairs[1]?pairImg(pairs[1][0],pairs[1][1],mob):null;
+    if(!tok.skip){ttStart(TX);ld.textContent="> connexion…"}
+    for(let i=0;i<pairs.length&&!tok.skip;i++){const PU=i?await P1:P0;if(!PU)continue;HV.rstyle="code";HV.rdx=760;HV.cx=W/2;HV.cy=H*(mob?.62:.61);HV.sc=mob?1.02:1.6;HV.fso=mob?4.5:5;HV.url="";hvShow(PU,true);
+      ld.textContent=`> chargement des souvenirs… ${pad(i+1)}/${pad(pairs.length)}`;sfx.blip();await sleep(BEAT*4-300);if(i<pairs.length-1){hvHide();await sleep(300)}}
+    ttHide();
     HV.soft=0;HV.rdx=0;
     hvHide();HV.cx=HV.cy=null;HV.sc=1;HV.fso=0;HV.rstyle=null}
   ld.textContent="";if(tok.skip===1)tok.skip=0;
