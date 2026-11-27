@@ -508,8 +508,8 @@ body.dogfight #rain{opacity:.3}#rain{transition:opacity .25s}
 body.mxdive #rain,body.mxdive #world{transform-origin:50% 48%;will-change:transform,filter}
 body.mxdive #rain{animation:mxsinkR 4.6s cubic-bezier(.35,0,.65,1) forwards}
 body.mxdive #world{animation:mxsinkW 4.6s cubic-bezier(.35,0,.65,1) forwards}
-body.mxdive.mxsuck #rain{animation:mxsuckR .62s cubic-bezier(.55,0,.9,.35) forwards}
-body.mxdive.mxsuck #world{animation:mxsuckW .62s cubic-bezier(.55,0,.9,.35) forwards}
+body.mxdive.mxsuck #rain{animation:mxsuckR 1.15s cubic-bezier(.45,0,.75,.4) forwards}
+body.mxdive.mxsuck #world{animation:mxsuckW 1.15s cubic-bezier(.45,0,.75,.4) forwards}
 @keyframes mxsinkR{0%{transform:perspective(900px) translateZ(0) rotateZ(0);filter:brightness(1)}50%{transform:perspective(900px) translateZ(70px) rotateX(2deg) rotateZ(-1deg);filter:brightness(1.1)}100%{transform:perspective(900px) translateZ(150px) rotateX(3deg) rotateZ(1.5deg);filter:brightness(1.25)}}
 @keyframes mxsinkW{0%{transform:scale(1)}100%{transform:scale(1.28) rotateZ(-1deg)}}
 @keyframes mxsuckR{0%{transform:perspective(900px) translateZ(150px) rotateX(3deg) rotateZ(1.5deg);filter:brightness(1.25)}100%{transform:perspective(900px) translateZ(560px) rotateX(0) rotateZ(7deg);filter:brightness(2.4) blur(1.2px)}}
@@ -1268,10 +1268,10 @@ function tnDraw(x,t){const T=HV.tn;if(!T)return;const fs=HV.fs;
 function hvCell(i){const o=HV.o,fs=HV.fs,c=i%HV.c,r=(i/HV.c)|0,v=HV.L[i],px=c*fs,py=r*fs;o.clearRect(px,py,fs,fs);if(v<.1)return;
   const g=DENS[Math.min(DENS.length-1,(v*DENS.length)|0)],sz=fs*(.8+.5*v),a=Math.min(1,.3+v*1.05);
   o.font=sz.toFixed(1)+"px VT323,monospace";o.fillStyle=v>.56?`rgba(${(150+105*v)|0},255,${(170+85*v)|0},${a})`:`rgba(${(60*v)|0},${(120+160*v)|0},${(55+60*v)|0},${a})`;o.fillText((Math.random()<.5?g:DIG[HV.ch[i]]),px+fs/2,py+fs/2+1)}
-function hvShow(url,force){if(!url||(TOUCH&&!force))return;HV.rd=force?480:700;if(!force&&url!==HV.url&&performance.now()-(HV.sh||0)>260){HV.sh=performance.now();sfx.hover()}if(!force){HV.cx=HV.cy=null;HV.sc=1;HV.fso=0;HV.rstyle=null}if(url===HV.url&&HV.ta)return;if(url!==HV.url)HV.tn=null;HV.url=url;HV.ta=1;HV.t0=performance.now();HV.gl=performance.now()+120;HV.nextGl=performance.now()+700;const go=im=>{if(HV.url===url){hvBuild(im);HV.t0=performance.now()}};
+function hvShow(url,force){if(!url||(TOUCH&&!force))return;HV.rd=force?(document.body.classList.contains("mxdive")?1300:480):700;if(!force&&url!==HV.url&&performance.now()-(HV.sh||0)>260){HV.sh=performance.now();sfx.hover()}if(!force){HV.cx=HV.cy=null;HV.sc=1;HV.fso=0;HV.rstyle=null}if(url===HV.url&&HV.ta)return;if(url!==HV.url)HV.tn=null;HV.url=url;HV.ta=1;HV.t0=performance.now();HV.gl=performance.now()+120;HV.nextGl=performance.now()+700;const go=im=>{if(HV.url===url){hvBuild(im);HV.t0=performance.now()}};
   const c=HV.cache.get(url);if(c&&c.complete&&c.naturalWidth){go(c);return}const im=new Image();im.onload=()=>go(im);im.src=url;HV.cache.set(url,im)}
 function hvHide(){HV.ta=0}
-function hvDraw(x,t){HV.a+=(HV.ta-HV.a)*(HV.ta?.14:.1);if(HV.a<.01||!HV.off)return;
+function hvDraw(x,t){HV.a+=(HV.ta-HV.a)*(document.body.classList.contains("mxdive")?(HV.ta?.05:.06):(HV.ta?.14:.1));if(HV.a<.01||!HV.off)return;
   /* scintillement : quelques chiffres changent à chaque image */
   const n=HV.c*HV.r,k=Math.max(4,n*.012|0);for(let q=0;q<k;q++){const i=Math.random()*n|0;HV.ch[i]=Math.random()*10|0;hvCell(i)}
   tnDraw(x,t);
@@ -1283,7 +1283,8 @@ function hvDraw(x,t){HV.a+=(HV.ta-HV.a)*(HV.ta?.14:.1);if(HV.a<.01||!HV.off)retu
       if(HV.L[i]>.12&&Math.random()<.55){x.fillStyle=Math.random()<.4?"rgba(240,255,244,.95)":"rgba(90,255,140,.9)";x.fillText(DIG[Math.random()*10|0],HV.ox+c*fs,HV.oy+r*fs+fs)}}x.restore()}
   const src=p<1?HV.rv:HV.off;
   if(HV.ph&&HV.im){if(HV.tim!==HV.im){HV.tim=HV.im;const c=document.createElement("canvas"),k=Math.min(1,900/Math.max(HV.im.naturalWidth,HV.im.naturalHeight));c.width=HV.im.naturalWidth*k|0;c.height=HV.im.naturalHeight*k|0;const cx=c.getContext("2d");cx.filter="grayscale(1) contrast(1.25) brightness(.78)";cx.drawImage(HV.im,0,0,c.width,c.height);cx.filter="none";cx.globalCompositeOperation="multiply";cx.fillStyle="#38ff74";cx.fillRect(0,0,c.width,c.height);HV.tc=c}
-    x.save();x.globalAlpha=HV.a*.8*p*p;x.drawImage(HV.tc,HV.ox,HV.oy,HV.w,HV.h);x.restore()}
+    if(HV.tcm_k!==HV.tc||HV.tcm_m!==HV.mk){HV.tcm_k=HV.tc;HV.tcm_m=HV.mk;const m=document.createElement("canvas");m.width=HV.tc.width;m.height=HV.tc.height;const mx=m.getContext("2d");mx.drawImage(HV.tc,0,0);if(HV.mk){mx.globalCompositeOperation="destination-in";mx.imageSmoothingEnabled=true;mx.filter="blur("+Math.round(m.width/40)+"px)";mx.drawImage(HV.mk,0,0,m.width,m.height);mx.filter="none"}HV.tcm=m}
+    x.save();x.globalAlpha=HV.a*.85*p*p;x.drawImage(HV.tcm||HV.tc,HV.ox,HV.oy,HV.w,HV.h);x.restore()}
   x.save();x.globalAlpha=HV.a;x.drawImage(src,0,0,src.width,src.height,HV.ox,HV.oy,HV.w,HV.h);
 
   /* léger glitch : tranches décalées + image fantôme, par à-coups */
@@ -1923,11 +1924,11 @@ function mxOpen(p,mid){const mxP=(...a)=>{try{window.mxProg&&window.mxProg(...a)
   /* les photos du dossier surgissent une à une dans le réseau, tout autour du centre */
   for(let i=0;i<n;i++){let s;do{s=SS[Math.random()*SS.length|0]}while(s===HV.rstyle);HV.rstyle=s;
     const an=a0+i*2.4;HV.cx=W/2+Math.cos(an)*W*(mob?.12:.22);HV.cy=H*.48+Math.sin(an)*H*.14;HV.sc=.62+Math.random()*.14;HV.fso=mob?4:4.5;HV.url="";hvShow(pool[i],true);
-    btPulse(HV.cx+Math.cos(an)*H*.3,HV.cy+Math.sin(an)*H*.3,false);lab.textContent=`> décryptage ${title}… ${pad(i+1)}/${pad(tot)}`;{const M=["> décryptage des métadonnées…","> extraction EXIF · ISO · focale…","> reconstruction des pixels…","> indexation des fichiers…","> vérification de la signature…"];const f=p.files.filter(x=>x.t==="img")[i];mxP((i+1)/(tot+1),M[i%M.length],`${f?f.n:""} · ${f?f.w+"×"+f.h:""} · ${"0x"+(Math.random()*65535|0).toString(16).toUpperCase()}`)}sfx.hover();await sleep(mob?560:680)}
+    btPulse(HV.cx+Math.cos(an)*H*.3,HV.cy+Math.sin(an)*H*.3,false);lab.textContent=`> décryptage ${title}… ${pad(i+1)}/${pad(tot)}`;{const M=["> décryptage des métadonnées…","> extraction EXIF · ISO · focale…","> reconstruction des pixels…","> indexation des fichiers…","> vérification de la signature…"];const f=p.files.filter(x=>x.t==="img")[i];mxP((i+1)/(tot+1),M[i%M.length],`${f?f.n:""} · ${f?f.w+"×"+f.h:""} · ${"0x"+(Math.random()*65535|0).toString(16).toUpperCase()}`)}sfx.hover();await sleep(mob?1000:1350)}
   /* la couverture au centre, plus grande */
-  if(coverU){HV.rstyle="in";HV.cx=W/2;HV.cy=H*.48;HV.sc=mob?.92:1;HV.fso=mob?4:5;HV.url="";hvShow(coverU,true);btPulse(W/2,H/2,true);sfx.hover();lab.textContent=`> ${title} · ${pad(tot)}/${pad(tot)} · accès autorisé`;mxP(1,"> métadonnées déchiffrées · accès autorisé",`${title} · ${p.files.length} fichiers · ${String(p.cat||"").toLowerCase()}`);await sleep(1000)}
+  if(coverU){HV.rstyle="in";HV.cx=W/2;HV.cy=H*.48;HV.sc=mob?.92:1;HV.fso=mob?4:5;HV.url="";hvShow(coverU,true);btPulse(W/2,H/2,true);sfx.hover();lab.textContent=`> ${title} · ${pad(tot)}/${pad(tot)} · accès autorisé`;mxP(1,"> métadonnées déchiffrées · accès autorisé",`${title} · ${p.files.length} fichiers · ${String(p.cat||"").toLowerCase()}`);await sleep(2300)}
   /* aspiration : le réseau plonge vers l'écran, puis la page s'ouvre */
-  b.classList.add("mxsuck");try{sfx.trans()}catch(e){}await sleep(560);
+  b.classList.add("mxsuck");try{sfx.trans()}catch(e){}await sleep(1100);
   await mid();hvHide();HV.cx=HV.cy=null;HV.sc=1;HV.fso=0;HV.rstyle=null;HV.ph=0;lab.className="";mxP(null);
   b.classList.remove("wel","mxsuck");setTimeout(()=>b.classList.remove("mxdive"),50);done()})}
 async function openProject(id){const p=projs().find(x=>x.id===id);if(!p)return;closeAllWins();hvHide();sfx.open();
