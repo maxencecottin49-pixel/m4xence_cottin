@@ -508,8 +508,8 @@ body.dogfight #rain{opacity:.3}#rain{transition:opacity .25s}
 body.mxdive #rain,body.mxdive #world{transform-origin:50% 48%;will-change:transform,filter}
 body.mxdive #rain{animation:mxsinkR 4.6s cubic-bezier(.35,0,.65,1) forwards}
 body.mxdive #world{animation:mxsinkW 4.6s cubic-bezier(.35,0,.65,1) forwards}
-body.mxdive.mxsuck #rain{animation:mxsuckR 1.15s cubic-bezier(.45,0,.75,.4) forwards}
-body.mxdive.mxsuck #world{animation:mxsuckW 1.15s cubic-bezier(.45,0,.75,.4) forwards}
+body.mxdive.mxsuck #rain{animation:mxsuckR .62s cubic-bezier(.55,0,.9,.35) forwards}
+body.mxdive.mxsuck #world{animation:mxsuckW .62s cubic-bezier(.55,0,.9,.35) forwards}
 @keyframes mxsinkR{0%{transform:perspective(900px) translateZ(0) rotateZ(0);filter:brightness(1)}50%{transform:perspective(900px) translateZ(70px) rotateX(2deg) rotateZ(-1deg);filter:brightness(1.1)}100%{transform:perspective(900px) translateZ(150px) rotateX(3deg) rotateZ(1.5deg);filter:brightness(1.25)}}
 @keyframes mxsinkW{0%{transform:scale(1)}100%{transform:scale(1.28) rotateZ(-1deg)}}
 @keyframes mxsuckR{0%{transform:perspective(900px) translateZ(150px) rotateX(3deg) rotateZ(1.5deg);filter:brightness(1.25)}100%{transform:perspective(900px) translateZ(560px) rotateX(0) rotateZ(7deg);filter:brightness(2.4) blur(1.2px)}}
@@ -1190,7 +1190,7 @@ function decrypt(x,t){const L=R.lens,fs=R.fs,n=R.lc*R.lr;
 /* survol d'un dossier : la couverture se dessine en chiffres derrière l'écran, avec un léger glitch */
 const HV={url:"",a:0,ta:0,t0:0,cache:new Map(),off:null,ox:0,oy:0,w:0,h:0,c:0,r:0,fs:10,L:null,ch:null,gl:0,nextGl:0};
 const DENS="17423596080";
-function hvBuild(im){HV.im=im;const dpr=Math.min(devicePixelRatio||1,2),fs=HV.fs=HV.fso||(R.w<700?6:7),W=R.w,H=R.h,ir=im.naturalWidth/im.naturalHeight,hs=HV.sc||1;let h=H*.86*hs,w=h*ir;if(w>W*(W<860?.9:.56)*hs){w=W*(W<860?.9:.56)*hs;h=w/ir}
+function hvBuild(im){HV.im=im;const dpr=Math.min(devicePixelRatio||1,2),fs=HV.fs=HV.fso||(R.w<700?5:5.5),W=R.w,H=R.h,ir=im.naturalWidth/im.naturalHeight,hs=HV.sc||1;let h=H*.86*hs,w=h*ir;if(w>W*(W<860?.9:.56)*hs){w=W*(W<860?.9:.56)*hs;h=w/ir}
   /* zone élargie autour de la photo : les bords se prolongent en réseaux qui se perdent dans la matrice */
   const mx=Math.round(w*.2/fs),my=Math.round(h*.12/fs),ic=Math.max(1,Math.round(w/fs)),irr=Math.max(1,Math.round(h/fs)),c=ic+2*mx,r=irr+2*my;
   const cv=document.createElement("canvas");cv.width=ic;cv.height=irr;const x=cv.getContext("2d");x.drawImage(im,0,0,ic,irr);let d;try{d=x.getImageData(0,0,ic,irr).data}catch(e){HV.off=null;return}
@@ -1232,17 +1232,17 @@ function hvBuild(im){HV.im=im;const dpr=Math.min(devicePixelRatio||1,2),fs=HV.fs
 function tnBuild(lumAt,ic,irr,mx,my,ph){const fs=HV.fs,W=R.w,H=R.h,dpr=Math.min(devicePixelRatio||1,2),cx=HV.ox+HV.w/2,cy=HV.oy+HV.h/2,hw=ic*fs/2,hh=irr*fs/2;
   const cells=[],occ=new Map(),tens=[],tips=[],key=(a,b)=>a*4096+b;
   const put=(gx,gy,sv,a,ti,thick)=>{if(gx<0||gy<0||gx*fs>W||gy*fs>H)return;const kk=key(gx,gy),o=occ.get(kk);if(o!==undefined){const c=cells[o];c.n++;c.a=Math.max(c.a,a);if(c.t!==ti)c.node=1;return}occ.set(kk,cells.length);cells.push({x:gx,y:gy,s:sv,a,t:ti,n:1,node:0,th:thick})};
-  const root=Math.round(Math.min(46,Math.max(18,(W+H)/60)));let budget=W*H/(fs*fs)*.11;
+  const root=Math.round(Math.min(34,Math.max(14,(W+H)/80)));let budget=W*H/49*.085;
   const grow=(x0,y0,dir,s0,lum,depth,maxL,ti)=>{let px=x0,py=y0,d=dir,sv=s0,len=0,turn=(Math.random()-.5)*.04,pp=Math.random()*6.28;const path=[];
     while(len<maxL&&budget>0){d+=turn+.22*Math.sin(len*.012+pp)*.18+(Math.random()-.5)*.16;turn*=.985;
       px+=Math.cos(d)*fs*.9;py+=Math.sin(d)*fs*.9;len+=fs*.9;sv+=fs*.9;if(px<-fs*2||py<-fs*2||px>W+fs*2||py>H+fs*2)break;
       const f=1-len/maxL,a=Math.max(.34,lum*(.6+.4*f)*(depth?.85:1)),gx=Math.round(px/fs),gy=Math.round(py/fs);
       const th=depth===0&&len<fs*22?2:depth===0&&len<fs*60?1:depth===1&&len<fs*14?1:0;put(gx,gy,sv,a,ti,th);budget--;path.push([gx,gy,sv]);
       if(th){const nx=Math.round(-Math.sin(d)),ny=Math.round(Math.cos(d));put(gx+nx,gy+ny,sv+fs,a*.7,ti,0);if(th>1)put(gx-nx,gy-ny,sv+fs,a*.55,ti,0)}
-      if(depth<3&&len>fs*6&&Math.random()<(depth?.018:.028)){const side=Math.random()<.5?-1:1,nt=tens.length;tens.push(null);tens[nt]=grow(px,py,d+side*(.45+Math.random()*.7),sv,lum*.85,depth+1,(maxL-len)*(.45+Math.random()*.4),nt)}}
+      if(depth<3&&len>fs*6&&Math.random()<(depth?.013:.021)){const side=Math.random()<.5?-1:1,nt=tens.length;tens.push(null);tens[nt]=grow(px,py,d+side*(.45+Math.random()*.7),sv,lum*.85,depth+1,(maxL-len)*(.45+Math.random()*.4),nt)}}
     tips.push([px,py,sv,ti]);return path};
   for(let i=0;i<root;i++){const ang=i/root*6.283+(Math.random()-.5)*.25,rb=.87+.08*Math.sin(ang*3+ph[0])+.06*Math.sin(ang*5+ph[1]),x0=cx+Math.cos(ang)*rb*hw,y0=cy+Math.sin(ang)*rb*hh/.95;
-    const lum=Math.max(.35,lumAt(Math.round((x0-HV.ox)/fs)-mx,Math.round((y0-HV.oy)/fs)-my)),far=Math.hypot(W,H)*(.55+Math.random()*.6),ti=tens.length;tens.push(null);
+    const lum=Math.max(.35,lumAt(Math.round((x0-HV.ox)/fs)-mx,Math.round((y0-HV.oy)/fs)-my)),far=Math.hypot(W,H)*(.4+Math.random()*.45),ti=tens.length;tens.push(null);
     tens[ti]=grow(x0,y0,ang+(Math.random()-.5)*.5,0,lum,0,far,ti)}
   /* synapses : liaisons droites entre extrémités voisines */
   let links=0;for(let i=0;i<tips.length&&links<40;i++)for(let j=i+1;j<tips.length&&links<40;j++){const A=tips[i],B=tips[j];if(A[3]===B[3])continue;const dd=Math.hypot(A[0]-B[0],A[1]-B[1]);if(dd<fs*6||dd>fs*28)continue;
@@ -1257,7 +1257,7 @@ function tnDraw(x,t){const T=HV.tn;if(!T)return;const fs=HV.fs;
   if(T.i<T.cells.length){const reach=Math.max(0,(t-HV.t0-200))*1.05;while(T.i<T.cells.length&&T.cells[T.i].s<=reach)tnCell(T.cells[T.i++])}
   /* scintillement */
   const k=Math.min(T.i,90);for(let q=0;q<k;q++)tnCell(T.cells[Math.random()*T.i|0]);
-  x.save();x.globalAlpha=HV.a;x.drawImage(T.off,0,0,R.w,R.h);
+  x.save();x.globalAlpha=HV.a*.8;x.drawImage(T.off,0,0,R.w,R.h);
   /* tête de croissance + impulsions qui voyagent le long des filaments */
   if(!RM){x.font=fs+"px VT323,monospace";x.textAlign="center";x.textBaseline="middle";const reach=(t-HV.t0-200)*1.05;
     for(let n=0;n<T.tens.length;n++){const pth=T.tens[n],L=pth.length,last=pth[L-1][2];
@@ -1268,10 +1268,10 @@ function tnDraw(x,t){const T=HV.tn;if(!T)return;const fs=HV.fs;
 function hvCell(i){const o=HV.o,fs=HV.fs,c=i%HV.c,r=(i/HV.c)|0,v=HV.L[i],px=c*fs,py=r*fs;o.clearRect(px,py,fs,fs);if(v<.1)return;
   const g=DENS[Math.min(DENS.length-1,(v*DENS.length)|0)],sz=fs*(.8+.5*v),a=Math.min(1,.3+v*1.05);
   o.font=sz.toFixed(1)+"px VT323,monospace";o.fillStyle=v>.56?`rgba(${(150+105*v)|0},255,${(170+85*v)|0},${a})`:`rgba(${(60*v)|0},${(120+160*v)|0},${(55+60*v)|0},${a})`;o.fillText((Math.random()<.5?g:DIG[HV.ch[i]]),px+fs/2,py+fs/2+1)}
-function hvShow(url,force){if(!url||(TOUCH&&!force))return;HV.rd=force?(document.body.classList.contains("mxdive")?1300:480):700;if(!force&&url!==HV.url&&performance.now()-(HV.sh||0)>260){HV.sh=performance.now();sfx.hover()}if(!force){HV.cx=HV.cy=null;HV.sc=1;HV.fso=0;HV.rstyle=null}if(url===HV.url&&HV.ta)return;if(url!==HV.url)HV.tn=null;HV.url=url;HV.ta=1;HV.t0=performance.now();HV.gl=performance.now()+120;HV.nextGl=performance.now()+700;const go=im=>{if(HV.url===url){hvBuild(im);HV.t0=performance.now()}};
+function hvShow(url,force){if(!url||(TOUCH&&!force))return;HV.rd=force?(HV.slow?1700:480):700;if(!force&&url!==HV.url&&performance.now()-(HV.sh||0)>260){HV.sh=performance.now();sfx.hover()}if(!force){HV.cx=HV.cy=null;HV.sc=1;HV.fso=0;HV.rstyle=null}if(url===HV.url&&HV.ta)return;if(url!==HV.url)HV.tn=null;HV.url=url;HV.ta=1;HV.t0=performance.now();HV.gl=performance.now()+120;HV.nextGl=performance.now()+700;const go=im=>{if(HV.url===url){hvBuild(im);HV.t0=performance.now()}};
   const c=HV.cache.get(url);if(c&&c.complete&&c.naturalWidth){go(c);return}const im=new Image();im.onload=()=>go(im);im.src=url;HV.cache.set(url,im)}
 function hvHide(){HV.ta=0}
-function hvDraw(x,t){HV.a+=(HV.ta-HV.a)*(document.body.classList.contains("mxdive")?(HV.ta?.05:.06):(HV.ta?.14:.1));if(HV.a<.01||!HV.off)return;
+function hvDraw(x,t){HV.a+=(HV.ta-HV.a)*(HV.slow?(HV.ta?.04:.035):(HV.ta?.14:.1));if(HV.a<.01||!HV.off)return;
   /* scintillement : quelques chiffres changent à chaque image */
   const n=HV.c*HV.r,k=Math.max(4,n*.012|0);for(let q=0;q<k;q++){const i=Math.random()*n|0;HV.ch[i]=Math.random()*10|0;hvCell(i)}
   tnDraw(x,t);
@@ -1924,11 +1924,11 @@ function mxOpen(p,mid){const mxP=(...a)=>{try{window.mxProg&&window.mxProg(...a)
   /* les photos du dossier surgissent une à une dans le réseau, tout autour du centre */
   for(let i=0;i<n;i++){let s;do{s=SS[Math.random()*SS.length|0]}while(s===HV.rstyle);HV.rstyle=s;
     const an=a0+i*2.4;HV.cx=W/2+Math.cos(an)*W*(mob?.12:.22);HV.cy=H*.48+Math.sin(an)*H*.14;HV.sc=.62+Math.random()*.14;HV.fso=mob?4:4.5;HV.url="";hvShow(pool[i],true);
-    btPulse(HV.cx+Math.cos(an)*H*.3,HV.cy+Math.sin(an)*H*.3,false);lab.textContent=`> décryptage ${title}… ${pad(i+1)}/${pad(tot)}`;{const M=["> décryptage des métadonnées…","> extraction EXIF · ISO · focale…","> reconstruction des pixels…","> indexation des fichiers…","> vérification de la signature…"];const f=p.files.filter(x=>x.t==="img")[i];mxP((i+1)/(tot+1),M[i%M.length],`${f?f.n:""} · ${f?f.w+"×"+f.h:""} · ${"0x"+(Math.random()*65535|0).toString(16).toUpperCase()}`)}sfx.hover();await sleep(mob?1000:1350)}
+    btPulse(HV.cx+Math.cos(an)*H*.3,HV.cy+Math.sin(an)*H*.3,false);lab.textContent=`> décryptage ${title}… ${pad(i+1)}/${pad(tot)}`;{const M=["> décryptage des métadonnées…","> extraction EXIF · ISO · focale…","> reconstruction des pixels…","> indexation des fichiers…","> vérification de la signature…"];const f=p.files.filter(x=>x.t==="img")[i];mxP((i+1)/(tot+1),M[i%M.length],`${f?f.n:""} · ${f?f.w+"×"+f.h:""} · ${"0x"+(Math.random()*65535|0).toString(16).toUpperCase()}`)}sfx.hover();await sleep(mob?560:680)}
   /* la couverture au centre, plus grande */
-  if(coverU){HV.rstyle="in";HV.cx=W/2;HV.cy=H*.48;HV.sc=mob?.92:1;HV.fso=mob?4:5;HV.url="";hvShow(coverU,true);btPulse(W/2,H/2,true);sfx.hover();lab.textContent=`> ${title} · ${pad(tot)}/${pad(tot)} · accès autorisé`;mxP(1,"> métadonnées déchiffrées · accès autorisé",`${title} · ${p.files.length} fichiers · ${String(p.cat||"").toLowerCase()}`);await sleep(2300)}
+  if(coverU){HV.rstyle="in";HV.cx=W/2;HV.cy=H*.48;HV.sc=mob?.92:1;HV.fso=mob?4:5;HV.url="";hvShow(coverU,true);btPulse(W/2,H/2,true);sfx.hover();lab.textContent=`> ${title} · ${pad(tot)}/${pad(tot)} · accès autorisé`;mxP(1,"> métadonnées déchiffrées · accès autorisé",`${title} · ${p.files.length} fichiers · ${String(p.cat||"").toLowerCase()}`);await sleep(1000)}
   /* aspiration : le réseau plonge vers l'écran, puis la page s'ouvre */
-  b.classList.add("mxsuck");try{sfx.trans()}catch(e){}await sleep(1100);
+  b.classList.add("mxsuck");try{sfx.trans()}catch(e){}await sleep(560);
   await mid();hvHide();HV.cx=HV.cy=null;HV.sc=1;HV.fso=0;HV.rstyle=null;HV.ph=0;lab.className="";mxP(null);
   b.classList.remove("wel","mxsuck");setTimeout(()=>b.classList.remove("mxdive"),50);done()})}
 async function openProject(id){const p=projs().find(x=>x.id===id);if(!p)return;closeAllWins();hvHide();sfx.open();
@@ -2028,9 +2028,12 @@ async function welcome(){if(WEL)return;musStart();const tok={skip:0,stage:"mont"
   const keyH=e=>{if(e.key==="Escape"){tok.skip=2}else if(e.key===" "||e.key==="Enter"){e.preventDefault();tok.skip=Math.max(tok.skip,1)}};addEventListener("keydown",keyH);
   const sleep=ms=>new Promise(res=>{const t0=performance.now(),k=tok.skip;const ck=()=>{if(tok.skip!==k||performance.now()-t0>=ms)res();else requestAnimationFrame(ck)};ck()});
   /* 1. montage : les images surgissent dans le réseau, à des endroits différents */
-  if(!RM&&urls.length){const order=urls.slice().sort(()=>Math.random()-.5),n=Math.max(6,Math.min(8,order.length*2)),dt=7200/n,W=innerWidth,H=innerHeight,mob=W<860;
-    for(let i=0;i<n&&!tok.skip;i++){const u=order[i%order.length];{const SS=["out","in","rain","side","spiral","scatter"];let st_;do{st_=SS[Math.random()*SS.length|0]}while(st_===HV.rstyle);HV.rstyle=st_}HV.cx=mob?W*(.35+Math.random()*.3):W*(.22+Math.random()*.56);HV.cy=H*(.45+Math.random()*.1);HV.sc=.72+Math.random()*.18;HV.fso=mob?5:6;HV.url="";hvShow(u,true);
-      {const an=Math.random()*6.283,rh=H*.43*HV.sc;btPulse(HV.cx+Math.cos(an)*rh*1.1,HV.cy+Math.sin(an)*rh,false)}ld.textContent=`> chargement des souvenirs… ${pad(i+1)}/${pad(n)}`;sfx.hover();await sleep(dt)}
+  if(!RM&&urls.length){const order=urls.slice().sort(()=>Math.random()-.5),n=Math.min(3,order.length),W=innerWidth,H=innerHeight,mob=W<860;
+    /* 3 photos seulement, lentes, à des endroits différents de la page, en décalé */
+    const SPOT=mob?[[.5,.36],[.5,.66],[.5,.5]]:[[.3,.42],[.7,.58],[.5,.47]];HV.slow=1;
+    for(let i=0;i<n&&!tok.skip;i++){const u=order[i];HV.rstyle=["in","rain","out"][i];HV.cx=W*SPOT[i][0];HV.cy=H*SPOT[i][1];HV.sc=mob?.66:.78;HV.fso=mob?4.5:5;HV.url="";hvShow(u,true);
+      {const an=Math.random()*6.283,rh=H*.43*HV.sc;btPulse(HV.cx+Math.cos(an)*rh*1.1,HV.cy+Math.sin(an)*rh,false)}ld.textContent=`> chargement des souvenirs… ${pad(i+1)}/${pad(n)}`;sfx.hover();await sleep(3000);if(i<n-1){hvHide();await sleep(900)}}
+    HV.slow=0;
     hvHide();HV.cx=HV.cy=null;HV.sc=1;HV.fso=0;HV.rstyle=null}
   ld.textContent="";if(tok.skip===1)tok.skip=0;
   /* 2. message tapé, qui sort de la matrice */
@@ -2355,6 +2358,13 @@ document.addEventListener("focusin",e=>{if(e.target.closest&&e.target.closest('.
 #cats .frow.cst .fold .fm{display:block;font:400 8px/1.6 "Press Start 2P",monospace;color:var(--gd);white-space:nowrap;text-shadow:0 0 6px #000}
 #cats .frow.cst .fold:hover .fm,#cats .frow.cst .fold:focus-visible .fm{color:var(--g)}
 #cats .frow.cst .fold svg{width:54px!important}
+/* dossiers et barre de filtres un peu plus lisibles sur la matrice */
+#cats .frow.cst .fold .fn{display:inline-block;background:rgba(0,0,0,.72);padding:2px 7px;color:#b8ffcb!important;text-shadow:0 0 6px rgba(0,255,65,.55)!important}
+#cats .frow.cst .fold svg{filter:drop-shadow(0 0 2px #000) drop-shadow(0 0 9px rgba(0,255,65,.8))!important}
+#cats .frow.cst .fold.dim{opacity:.75}
+.cfil{background:rgba(0,0,0,.7);padding:8px;width:fit-content;max-width:100%}
+.cfb{font-size:9px;color:#9dffb6;border-color:rgba(0,255,65,.5);background:rgba(0,20,6,.6)}
+.cfb i{color:#d6ffe0}
 #cats .fold .fm{display:none}
 /* fenêtres : fichiers ouverts */
 .win{background:rgba(0,9,3,.72)!important;border:none!important;box-shadow:0 0 60px rgba(0,255,65,.12),0 0 0 1px rgba(0,255,65,.18)!important;-webkit-backdrop-filter:blur(3px)!important;backdrop-filter:blur(3px)!important}
