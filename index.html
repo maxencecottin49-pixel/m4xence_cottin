@@ -896,12 +896,13 @@ body:not(.os) #xpb{display:none}
   <button id="skip">PASSER ▸</button>
 </div>
 
-<div id="os">
-  <header id="bar">
+<header id="bar">
     <button id="logo" aria-label="Revoir l'intro">◈ MAXENCE.OS</button>
     <nav aria-label="Menu"><button class="tb" data-win="about">Player 1</button><button class="tb" data-win="services">???</button><button class="tb" data-win="contact">Contact</button></nav>
     <div class="lvbox" title="Niveau et progression vers le prochain palier"><span class="lvn">NIV 1</span><span class="lvr">VISITEUR</span><span class="lvm" aria-hidden="true"><i></i></span><span class="lvx">0 / 500</span></div><div class="r"><span id="score">SCORE 000000</span><button class="tb" id="snd" aria-pressed="true">♪ son on</button><button class="tb" id="mus" aria-pressed="true">♫ musique on</button><button class="tb" id="editT" hidden aria-pressed="false">✎ éditer</button><span id="clock"></span></div>
   </header>
+<div id="os">
+  
   <main id="desk">
     <section class="idb">
       <p class="tag">&gt; utilisateur connecté_</p>
@@ -2625,6 +2626,15 @@ body.gxv2 #prest{display:none!important}
 #pres.v2 img,#pres.v2 video{-webkit-mask-image:none!important;mask-image:none!important}
 #pres.v2 .gx-hero h1{text-shadow:0 2px 30px rgba(0,0,0,.6)!important;line-height:.95}
 #pres.v2 .gx-chh h2{text-shadow:none!important;letter-spacing:.02em}
+
+/* barre du haut toujours visible (au-dessus de l'intro, des chargements et des projets) */
+#bar{position:fixed;top:0;left:0;right:0;z-index:90}
+#os{top:var(--barh,52px)!important;grid-template-rows:minmax(0,1fr) auto!important}
+#pres,#trans{top:var(--barh,52px)!important}
+#intro,#wel{top:var(--barh,52px)!important}
+#prest{top:var(--barh,52px)!important;height:calc(100% - var(--barh,52px))!important}
+#pres .gx-hero{height:calc(100svh - var(--barh,52px) - 60px)}
+body.intro-on #bar>*:not(#logo){opacity:.55}
 </style>
 
 <script>/* survol de ???.dat : des points d'interrogation se dessinent dans la matrice, comme les avions */
@@ -2680,6 +2690,15 @@ const isP=el=>el&&el.closest&&el.closest('.ico[data-win="about"],.tb[data-win="a
 document.addEventListener("pointerover",e=>{const t=isP(e.target);if(t&&!t.contains(e.relatedTarget))start()});
 document.addEventListener("pointerout",e=>{const t=isP(e.target);if(t&&!t.contains(e.relatedTarget))stop()});
 document.addEventListener("focusin",e=>{if(isP(e.target)){start();setTimeout(stop,1800)}});})();
+</script>
+<script>
+/* hauteur de la barre du haut → décalage des calques plein écran */
+(()=>{const b=document.getElementById("bar");if(!b)return;const f=()=>document.documentElement.style.setProperty("--barh",b.offsetHeight+"px");f();addEventListener("resize",f);if(window.ResizeObserver)new ResizeObserver(f).observe(b);
+ /* projet ouvert : un clic sur Player 1 / ??? / Contact ferme d'abord le projet */
+ b.addEventListener("click",e=>{const t=e.target.closest("[data-win]");if(!t||!document.body.classList.contains("pres-open"))return;const c=document.querySelector('#pres [data-a="close"]');if(!c)return;e.stopImmediatePropagation();e.preventDefault();c.click();const t0=Date.now(),w=setInterval(()=>{if(!document.body.classList.contains("pres-open")||Date.now()-t0>6000){clearInterval(w);if(!document.body.classList.contains("pres-open"))t.click()}},80)},true);
+ /* pendant l'intro / l'accueil, un clic sur la barre fait entrer dans le site */
+ b.addEventListener("click",e=>{const intro=document.getElementById("intro"),wel=document.getElementById("wel");const vis=el=>el&&getComputedStyle(el).display!=="none"&&getComputedStyle(el).visibility!=="hidden";
+   if(vis(intro)||(wel&&wel.classList.contains("on"))){const sk=document.getElementById("skip");if(sk&&sk.offsetParent)sk.click();const ws=wel&&wel.querySelector(".wskip");if(ws&&ws.offsetParent)ws.click()}},true)})();
 </script>
 </body>
 </html>
