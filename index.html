@@ -846,6 +846,7 @@ body:not(.os) #xpb{display:none}
 .unet em{font:18px/1 VT323,monospace;font-style:normal;color:#bfffd0}
 .uneb{position:absolute;top:8px;right:8px;z-index:2;padding:3px 6px;background:#ffd84a;color:#000;font:400 7px/1 "Press Start 2P",monospace}
 .unec .fav{top:6px;left:6px;z-index:3}
+.unepv{position:absolute;left:10px;right:10px;bottom:6px;display:none;gap:3px;z-index:2}.unepv i{flex:1;height:2px;background:rgba(255,216,74,.3)}.unepv i.on{background:#ffd84a;box-shadow:0 0 6px #ffd84a}.unec.pv .unepv{display:flex}.unec.pv .unet{bottom:16px}body #cats>.une .unec.pv .unei{opacity:.85;background-position:center 30%;transition:opacity .35s,background-image .3s}
 @media (max-width:900px){#desk{grid-template-columns:minmax(0,1fr)}#cats .frow{grid-template-columns:repeat(auto-fill,minmax(120px,1fr))}#cats .fold{min-height:128px}.une-g{grid-template-columns:1fr}}
 
 #cats .frow{grid-template-columns:repeat(auto-fill,minmax(190px,1fr))}
@@ -1389,6 +1390,13 @@ function constellate(){const fr=$("#cats .frow");if(!fr)return;if(innerWidth<600
 addEventListener("resize",()=>{clearTimeout(constellate.h);constellate.h=setTimeout(constellate,150)});
 let hvCur=null;
 $("#cats").addEventListener("pointerover",e=>{if(e.pointerType!=="mouse")return;const f=e.target.closest(".fold[data-open],.unec[data-open]");if(!f||f===hvCur)return;hvCur=f;const p=projs().find(x=>x.id===f.dataset.open);if(p&&p.files.length)hvShow(safe(p.hv)||coverOf(p));else hvHide()});
+/* coups de cœur : au survol, la carte fait défiler les images du projet (prévisualisation) */
+let unePv=null;const uneStop=()=>{if(unePv){clearInterval(unePv.t);unePv.el.classList.remove("pv");const i=unePv.el.querySelector(".unei");if(i)i.style.backgroundImage="";unePv=null}};
+$("#cats").addEventListener("pointerover",e=>{const c=e.target.closest(".unec[data-open]");if(!c){if(unePv)uneStop();return}if(unePv&&unePv.el===c)return;uneStop();const p=projs().find(x=>x.id===c.dataset.open);if(!p)return;
+  const L=p.files.map(f=>safe(f.t==="vid"?f.th:(f.th||f.u))).filter(Boolean);if(L.length<2)return;const im=c.querySelector(".unei");let k=Math.max(0,L.indexOf(coverOf(p)));L.forEach(u=>{const q=new Image();q.src=u});c.classList.add("pv");
+  const bar=c.querySelector(".unepv")||c.appendChild(Object.assign(document.createElement("span"),{className:"unepv"}));bar.innerHTML=L.map(()=>"<i></i>").join("");const mark=()=>bar.querySelectorAll("i").forEach((x,j)=>x.classList.toggle("on",j===k));mark();
+  unePv={el:c,t:setInterval(()=>{k=(k+1)%L.length;im.style.backgroundImage=`url('${L[k]}')`;mark()},950)}});
+$("#cats").addEventListener("pointerleave",uneStop);
 $("#cats").addEventListener("pointerout",e=>{const to=e.relatedTarget&&e.relatedTarget.closest&&e.relatedTarget.closest(".fold[data-open],.unec[data-open]");if(!to){hvCur=null;hvHide()}});
 $("#cats").addEventListener("focusin",e=>{const f=e.target.closest(".fold[data-open],.unec[data-open]");if(!f)return;const p=projs().find(x=>x.id===f.dataset.open);if(p&&p.files.length&&!TOUCH)hvShow(safe(p.hv)||coverOf(p))});
 $("#cats").addEventListener("focusout",()=>{hvCur=null;hvHide()});
