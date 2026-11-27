@@ -2658,7 +2658,6 @@ body.intro-on #bar>*:not(#logo){opacity:.55}
 .gx-hero.split .gx-ht{max-width:44%}
 .gx-hero.split h1{font-size:clamp(40px,5.6vw,104px)}
 #pres.v2,#pres.v2.cy{background:#000!important}
-#pres.v2 .hud{background:#000!important}
 #pres.v2 .gx-intro,#pres.v2 .gx-gal,#pres.v2 .gx-next,#pres.v2 .vid,#pres.v2 .bri,#pres.v2 .rare,#pres.v2 .mk,#pres.v2 .pfoot{background:#000!important}
 @media (max-width:760px){.gx-hero.split .gx-pic{left:16px;right:16px;top:16px;bottom:44%;max-width:none;justify-content:center}.gx-hero.split .gx-ht{max-width:none}}
 
@@ -2667,6 +2666,12 @@ body.intro-on #bar>*:not(#logo){opacity:.55}
 body #cats{grid-column:1/-1!important;grid-row:3!important;width:100%;max-width:1500px;justify-self:center}
 #cats .frow.cst{height:clamp(440px,58vh,640px)!important}
 }
+
+/* page projet : plus de seconde barre, seulement le bouton menu flottant */
+#pres.v2 .hud{position:sticky;top:0;height:0;padding:0!important;margin:0!important;background:none!important;border:0!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;overflow:visible;z-index:9;pointer-events:none}
+#pres.v2 .hud>*:not(.back){display:none!important}
+#pres.v2 .hud .back{position:absolute;top:14px;left:max(2vw,14px);pointer-events:auto;font:400 20px/1 VT323,monospace!important;padding:8px 14px!important;background:rgba(0,0,0,.65);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+#pres.v2 .gx-hero{height:calc(100svh - var(--barh,52px))!important}
 </style>
 
 <script>/* survol de ???.dat : des points d'interrogation se dessinent dans la matrice, comme les avions */
