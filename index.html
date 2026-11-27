@@ -1276,7 +1276,7 @@ function hvDraw(x,t){HV.a+=(HV.ta-HV.a)*(HV.ta?.14:.1);if(HV.a<.01||!HV.off)retu
   /* scintillement : quelques chiffres changent à chaque image */
   const n=HV.c*HV.r,k=Math.max(4,n*.012|0);for(let q=0;q<k;q++){const i=Math.random()*n|0;HV.ch[i]=Math.random()*10|0;hvCell(i)}
   tnDraw(x,t);
-  if(HV.mk){x.save();x.globalCompositeOperation="destination-out";x.globalAlpha=HV.a*.62*(RM?1:Math.min(1,(t-HV.t0)/500));x.imageSmoothingEnabled=true;x.drawImage(HV.mk,HV.ox,HV.oy,HV.w,HV.h);x.restore()}
+  if(HV.mk){x.save();x.globalCompositeOperation="destination-out";x.globalAlpha=HV.a*.76*(RM?1:Math.min(1,(t-HV.t0)/500));x.imageSmoothingEnabled=true;x.drawImage(HV.mk,HV.ox,HV.oy,HV.w,HV.h);x.restore()}
   const p=RM||!HV.ord?1:Math.min(1,(t-HV.t0)/(HV.rd||650)),sh=HV.h,dpr=HV.off.width/HV.w;
   /* révélation : la photo s'assemble depuis le réseau, des bords vers le centre, cellule par cellule */
   if(p<1){const tgt=Math.floor(p*HV.ord.length),fs=HV.fs,ro=HV.rvx;x.save();x.font=fs+"px VT323,monospace";
@@ -1284,7 +1284,7 @@ function hvDraw(x,t){HV.a+=(HV.ta-HV.a)*(HV.ta?.14:.1);if(HV.a<.01||!HV.off)retu
       if(HV.L[i]>.12&&Math.random()<.55){x.fillStyle=Math.random()<.4?"rgba(240,255,244,.95)":"rgba(90,255,140,.9)";x.fillText(DIG[Math.random()*10|0],HV.ox+c*fs,HV.oy+r*fs+fs)}}x.restore()}
   const src=p<1?HV.rv:HV.off;
   if(HV.ph&&HV.im){if(HV.tim!==HV.im){HV.tim=HV.im;const c=document.createElement("canvas"),k=Math.min(1,900/Math.max(HV.im.naturalWidth,HV.im.naturalHeight));c.width=HV.im.naturalWidth*k|0;c.height=HV.im.naturalHeight*k|0;const cx=c.getContext("2d");cx.filter="grayscale(1) contrast(1.25) brightness(.78)";cx.drawImage(HV.im,0,0,c.width,c.height);cx.filter="none";cx.globalCompositeOperation="multiply";cx.fillStyle="#38ff74";cx.fillRect(0,0,c.width,c.height);HV.tc=c}
-    x.save();x.globalAlpha=HV.a*.62*p*p;x.drawImage(HV.tc,HV.ox,HV.oy,HV.w,HV.h);x.restore()}
+    x.save();x.globalAlpha=HV.a*.8*p*p;x.drawImage(HV.tc,HV.ox,HV.oy,HV.w,HV.h);x.restore()}
   x.save();x.globalAlpha=HV.a;x.drawImage(src,0,0,src.width,src.height,HV.ox,HV.oy,HV.w,HV.h);
 
   /* léger glitch : tranches décalées + image fantôme, par à-coups */
@@ -1533,7 +1533,7 @@ function ptsFx(v){const after=SC.s,before=after-v;
   else{tone(1174.66,.05,"square",.035);setTimeout(()=>tone(v>=200?1760:1396.91,.09,"square",.035),55)}
   const a=lvInfo(after),b=lvInfo(before);if(a.n>b.n)setTimeout(()=>palier(a.n),180)}
 let PAL=null;
-function palier(n){/* animation de passage de niveau retirée : simple notification */toast(`★ NIVEAU ${n} · ${lvInfo(SC.s).name}`);return;if(PAL){PAL.q=n;return}
+function palier(n){/* passage de niveau : seule la barre de niveau s'anime */document.querySelectorAll(".lvbox,.hud").forEach(e=>{e.classList.remove("lvup");void e.offsetWidth;e.classList.add("lvup")});clearTimeout(palier.t);palier.t=setTimeout(()=>document.querySelectorAll(".lvup").forEach(e=>e.classList.remove("lvup")),1700);return;if(PAL){PAL.q=n;return}
   const mk=id=>{const c=document.createElement("canvas");c.id=id;c.className="mxo";c.setAttribute("aria-hidden","true");document.body.appendChild(c);return c};
   const cv=document.getElementById("palfx")||mk("palfx"),W=innerWidth,H=innerHeight,dpr=Math.min(devicePixelRatio||1,1.5);cv.width=Math.ceil(W*dpr);cv.height=Math.ceil(H*dpr);cv.classList.add("on");
   const x=cv.getContext("2d");x.setTransform(dpr,0,0,dpr,0,0);x.clearRect(0,0,W,H);const st=W<700?9:12,r=Math.random;PAL={q:0};
@@ -2506,6 +2506,15 @@ body #mxbar.ok{box-shadow:0 0 0 1px rgba(0,255,65,.4)!important}
 #side .ico[data-win="about"] .sdt>span{color:#eaffef}
 @media (max-width:860px){#side{grid-template-columns:1fr 1fr!important;display:grid!important}#side .sdh{grid-column:1/-1}#side .ico{padding:10px!important}#side .ico svg{width:30px!important;height:30px!important}}
 
+
+/* passage de niveau : animation sur la barre uniquement */
+.lvup .lvm{animation:lvG 1.6s ease-out}
+.lvup .lvm i{animation:lvF 1.6s cubic-bezier(.2,.8,.2,1)!important}
+.lvup .lvn{display:inline-block;animation:lvN 1.6s ease-out}
+@keyframes lvF{0%{width:100%;filter:brightness(2.2)}35%{width:100%;filter:brightness(1.6)}55%{width:0;filter:none}100%{width:var(--xp,0%)}}
+@keyframes lvG{0%,40%{box-shadow:0 0 0 1px #fff,0 0 16px #00ff41,0 0 30px rgba(0,255,65,.6);border-color:#fff}100%{box-shadow:none}}
+@keyframes lvN{0%,30%{transform:scale(1);color:var(--g)}45%{transform:scale(1.35);color:#fff;text-shadow:0 0 10px #00ff41}100%{transform:scale(1)}}
+@media (prefers-reduced-motion:reduce){.lvup .lvm,.lvup .lvm i,.lvup .lvn{animation:none!important}}
 </style>
 
 <script>/* survol de ???.dat : des points d'interrogation se dessinent dans la matrice, comme les avions */
