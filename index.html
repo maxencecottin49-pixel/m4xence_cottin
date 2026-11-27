@@ -1388,9 +1388,9 @@ function constellate(){const fr=$("#cats .frow");if(!fr)return;if(innerWidth<600
   fs.forEach((f,i)=>{f.onpointerenter=()=>lit(i);f.onpointerleave=()=>lit(null);f.onfocus=()=>lit(i);f.onblur=()=>lit(null)})}
 addEventListener("resize",()=>{clearTimeout(constellate.h);constellate.h=setTimeout(constellate,150)});
 let hvCur=null;
-$("#cats").addEventListener("pointerover",e=>{if(e.pointerType!=="mouse")return;const f=e.target.closest(".fold[data-open]");if(!f||f===hvCur)return;hvCur=f;const p=projs().find(x=>x.id===f.dataset.open);if(p&&p.files.length)hvShow(safe(p.hv)||coverOf(p));else hvHide()});
-$("#cats").addEventListener("pointerout",e=>{const to=e.relatedTarget&&e.relatedTarget.closest&&e.relatedTarget.closest(".fold[data-open]");if(!to){hvCur=null;hvHide()}});
-$("#cats").addEventListener("focusin",e=>{const f=e.target.closest(".fold[data-open]");if(!f)return;const p=projs().find(x=>x.id===f.dataset.open);if(p&&p.files.length&&!TOUCH)hvShow(safe(p.hv)||coverOf(p))});
+$("#cats").addEventListener("pointerover",e=>{if(e.pointerType!=="mouse")return;const f=e.target.closest(".fold[data-open],.unec[data-open]");if(!f||f===hvCur)return;hvCur=f;const p=projs().find(x=>x.id===f.dataset.open);if(p&&p.files.length)hvShow(safe(p.hv)||coverOf(p));else hvHide()});
+$("#cats").addEventListener("pointerout",e=>{const to=e.relatedTarget&&e.relatedTarget.closest&&e.relatedTarget.closest(".fold[data-open],.unec[data-open]");if(!to){hvCur=null;hvHide()}});
+$("#cats").addEventListener("focusin",e=>{const f=e.target.closest(".fold[data-open],.unec[data-open]");if(!f)return;const p=projs().find(x=>x.id===f.dataset.open);if(p&&p.files.length&&!TOUCH)hvShow(safe(p.hv)||coverOf(p))});
 $("#cats").addEventListener("focusout",()=>{hvCur=null;hvHide()});
 const tickC=()=>{$("#clock").textContent=new Date().toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})};tickC();setInterval(tickC,15000);
 
@@ -2665,6 +2665,14 @@ body.intro-on #bar>*:not(#logo){opacity:.55}
 /* dossiers : toute la largeur sous les icônes système, constellation centrée */
 @media (min-width:861px){
 body #cats{grid-column:1/-1!important;grid-row:3!important;width:100%;max-width:1500px;justify-self:center}
+body #cats{grid-template-columns:clamp(240px,21vw,320px) minmax(0,1fr);align-items:start;column-gap:34px}
+body #cats>.une{grid-column:1;grid-row:1;position:sticky;top:calc(var(--barh,40px) + 14px)}
+body #cats>.cat{grid-column:2;grid-row:1;min-width:0}
+body #cats>.une .une-g{grid-template-columns:1fr;gap:14px}
+body #cats>.une h2{font-size:22px;flex-wrap:wrap;gap:2px 10px}
+body #cats>.une .unec{background:rgba(0,0,0,.35);transition:transform .35s,box-shadow .35s}
+body #cats>.une .unec:hover,body #cats>.une .unec:focus-visible{transform:translateX(6px);box-shadow:0 0 0 1px #000,0 0 30px rgba(255,216,74,.4)}
+body #cats>.une .unec:hover .unei,body #cats>.une .unec:focus-visible .unei{transform:none;opacity:.55}
 #cats .frow.cst{height:clamp(440px,58vh,640px)!important}
 }
 
