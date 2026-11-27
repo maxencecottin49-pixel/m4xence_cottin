@@ -169,6 +169,7 @@ body.os #os .cat:nth-child(2){animation-delay:.08s}body.os #os .cat:nth-child(3)
 .kv dd{margin:0;display:flex;flex-wrap:wrap;gap:8px;align-items:center;overflow-wrap:anywhere}
 /* ===== transition jeu vidéo ===== */
 #trans{position:fixed;inset:0;z-index:60;display:none;--ta:#00ff41}
+#pres.pleave{opacity:0;filter:brightness(1.6) blur(2px);transition:opacity .32s ease,filter .32s ease}
 #mxbug{position:fixed;inset:0;width:100%;height:100%;z-index:95;pointer-events:none}
 body.bugging #pres,body.bugging #os{animation:mxbugJ .09s steps(2) infinite}
 @keyframes mxbugJ{0%{transform:translate(-7px,2px) skewX(-1.5deg)}50%{transform:translate(6px,-3px) skewX(1deg)}100%{transform:translate(-2px,0)}}
@@ -1244,7 +1245,7 @@ function decrypt(x,t){const L=R.lens,fs=R.fs,n=R.lc*R.lr;
 /* survol d'un dossier : la couverture se dessine en chiffres derrière l'écran, avec un léger glitch */
 const HV={O:{},o:{},k:1,mv:0,ten:1,url:"",a:0,ta:0,t0:0,cache:new Map(),off:null,ox:0,oy:0,w:0,h:0,c:0,r:0,fs:10,L:null,ch:null,gl:0,nextGl:0};
 const DENS="17423596080";
-function hvBuild(im){HV.im=im;const O=HV.o=HV.O[HV.url]||{};HV.k=+O.k||1;HV.mv=+O.mv||0;HV.ten=+O.ten||1;HV.imp=0;const K=HV.k,V1=!!O.v1;const dpr=Math.min(devicePixelRatio||1,2),fs=HV.fs=HV.fso||(+O.fs||(R.w<700?5:5.5)),W=R.w,H=R.h,ir=im.naturalWidth/im.naturalHeight,hs=(HV.sc||1)*(+O.sc||1);let h=H*.86*hs,w=h*ir;if(w>W*(W<860?.9:.56)*hs){w=W*(W<860?.9:.56)*hs;h=w/ir}
+function hvBuild(im){HV.im=im;const O=HV.o=HV.O[HV.url]||{};HV.k=+O.k||1;HV.mv=+O.mv||0;HV.ten=+O.ten||1;HV.imp=0;const K=HV.k,V1=!!O.v1,NET=!!O.net,RAW=!!O.raw;const dpr=Math.min(devicePixelRatio||1,2),fs=HV.fs=HV.fso||(+O.fs||(R.w<700?5:5.5)),W=R.w,H=R.h,ir=im.naturalWidth/im.naturalHeight,hs=(HV.sc||1)*(+O.sc||1);let h=H*.86*hs,w=h*ir;if(w>W*(W<860?.9:.56)*hs){w=W*(W<860?.9:.56)*hs;h=w/ir}
   /* zone élargie autour de la photo : les bords se prolongent en réseaux qui se perdent dans la matrice */
   const mx=Math.round(w*.2/fs),my=Math.round(h*.12/fs),ic=Math.max(1,Math.round(w/fs)),irr=Math.max(1,Math.round(h/fs)),c=ic+2*mx,r=irr+2*my;
   const cv=document.createElement("canvas");cv.width=ic;cv.height=irr;const x=cv.getContext("2d");x.drawImage(im,0,0,ic,irr);let d;try{d=x.getImageData(0,0,ic,irr).data}catch(e){HV.off=null;return}
@@ -1253,8 +1254,10 @@ function hvBuild(im){HV.im=im;const O=HV.o=HV.O[HV.url]||{};HV.k=+O.k||1;HV.mv=+
   /* contraste local : renforce contours et détails (visages, silhouettes) */
   const box=(src,rad)=>{const tmp=new Float32Array(ni),out=new Float32Array(ni);for(let y=0;y<irr;y++){let sum=0,cnt=0;for(let x=-rad;x<ic;x++){const a=x+rad,b=x-rad-1;if(a<ic){sum+=src[y*ic+a];cnt++}if(b>=0){sum-=src[y*ic+b];cnt--}if(x>=0)tmp[y*ic+x]=sum/cnt}}
     for(let x=0;x<ic;x++){let sum=0,cnt=0;for(let y=-rad;y<irr;y++){const a=y+rad,b=y-rad-1;if(a<irr){sum+=tmp[a*ic+x];cnt++}if(b>=0){sum-=tmp[b*ic+x];cnt--}if(y>=0)out[y*ic+x]=sum/cnt}}return out};
-  const GF=Float32Array.from(G),B1=box(GF,1),B8=box(GF,Math.max(4,ic/16|0)),DT=new Float32Array(ni);for(let i=0;i<ni;i++)DT[i]=(GF[i]-B8[i])*1.25/255+(GF[i]-B1[i])*1.1/255;
-  const lumAt=(cc,rr)=>{cc=Math.min(ic-1,Math.max(0,cc));rr=Math.min(irr-1,Math.max(0,rr));const g=G[rr*ic+cc];if(!V1&&g<9)return 0;let v=Math.min(1,Math.pow(.35*g/255+.65*cdf[g],.9)*1.08)*(V1?.8:.86)+(V1?.1:.03)+DT[rr*ic+cc];v=Math.max(0,Math.min(1,v));let f=Math.min(1,(v*v*(3-2*v))*.6+v*.4);if(!V1&&f>.66)f=.66+(f-.66)*.48;return K*f};
+  const GF=Float32Array.from(G),B1=box(GF,1),B8=box(GF,Math.max(4,ic/16|0)),DT=new Float32Array(ni);for(let i=0;i<ni;i++)DT[i]=(GF[i]-B8[i])*1.25/255+(GF[i]-B1[i])*1.1/255;const AD=new Float32Array(ni);for(let i=0;i<ni;i++)AD[i]=Math.abs(GF[i]-B1[i]);const DD=box(AD,2);
+  const lumAt=(cc,rr)=>{cc=Math.min(ic-1,Math.max(0,cc));rr=Math.min(irr-1,Math.max(0,rr));const g=G[rr*ic+cc];if(!V1&&g<9)return 0;const ii=rr*ic+cc;let v=RAW?g/255+DT[ii]*.4:Math.min(1,Math.pow(.35*g/255+.65*cdf[g],.9)*1.08)*(V1?.8:.86)+(V1?.1:.03)+DT[ii];v=Math.max(0,Math.min(1,v));let f=Math.min(1,(v*v*(3-2*v))*.6+v*.4);
+    /* masses claires et lisses (ciel, robe, projecteurs) : ramenées dans la matrice */
+    if(!V1&&!RAW&&f>.46)f=.46+(f-.46)*(.42+.58*Math.min(1,DD[ii]/4));if(!V1&&!RAW&&f>.66)f=.66+(f-.66)*.48;return K*f};
   const ph=[0,1,2,3,4,5,6,7].map(()=>Math.random()*6.283),n=c*r,L=new Float32Array(n),MK=new Uint8ClampedArray(n*4);
   for(let rr=0;rr<r;rr++)for(let cc=0;cc<c;cc++){const k=rr*c+cc,u=(cc+.5-c/2)/(ic/2),v=(rr+.5-r/2)/(irr/2),ang=Math.atan2(v,u),dist=Math.hypot(u*.95,v);
     /* contour organique : jamais un rectangle */
@@ -1264,7 +1267,7 @@ function hvBuild(im){HV.im=im;const O=HV.o=HV.O[HV.url]||{};HV.k=+O.k||1;HV.mv=+
     const nn=Math.sin(cc*.31+ph[4])+Math.sin(rr*.37+ph[5])+Math.sin((cc+rr)*.19+ph[6])+Math.sin((cc-rr)*.23+ph[7]),line=Math.max(0,1-Math.abs(nn)/.45),fall=Math.exp(-Math.max(0,dist-rb)*2.6);
     let out=(.25+lum*.75)*line*line*fall*.95;
     if(dist>rb-.1&&Math.sin(cc*12.9898+ph[0]*7)>.8)out=Math.max(out,(.2+lum*.45)*Math.exp(-Math.max(0,dist-rb)*2.4)*(Math.abs(v)>.55?1:.35));
-    L[k]=lum*core+(1-core)*out;MK[k*4+3]=(V1?core:core*(.18+.6*Math.min(1,lum*1.3)))*255}
+    L[k]=lum*core+(1-core)*out;if(NET&&L[k]<.34)L[k]=Math.max(L[k],line*line*.44*(.4+.6*core));MK[k*4+3]=(V1?core:core*(.18+.6*Math.min(1,lum*1.3)))*255}
   HV.L=L;HV.c=c;HV.r=r;w=c*fs;h=r*fs;HV.w=w;HV.h=h;HV.ox=(HV.cx!=null?HV.cx:(R.w<860?W/2:W*.62))-w/2;HV.oy=(HV.cy!=null?HV.cy:H*.52)-h/2;HV.bx=HV.ox;HV.by=HV.oy;HV.ch=new Uint8Array(n);for(let i=0;i<n;i++)HV.ch[i]=Math.random()*10|0;
   const off=document.createElement("canvas");off.width=Math.ceil(w*dpr);off.height=Math.ceil(h*dpr);const o=off.getContext("2d");o.setTransform(dpr,0,0,dpr,0,0);o.textAlign="center";o.textBaseline="middle";HV.off=off;HV.o=o;
   const mk=document.createElement("canvas");mk.width=c;mk.height=r;mk.getContext("2d").putImageData(new ImageData(MK,c,r),0,0);HV.mk=mk;
@@ -1323,10 +1326,10 @@ function tnDraw(x,t){const T=HV.tn;if(!T)return;const fs=HV.fs;
 function hvCell(i){const o=HV.o,fs=HV.fs,c=i%HV.c,r=(i/HV.c)|0,v=HV.L[i],px=c*fs,py=r*fs;o.clearRect(px,py,fs,fs);if(v<.1)return;
   const V1=HV.o.v1,g=DENS[Math.min(DENS.length-1,(v*DENS.length)|0)],sz=fs*(.8+.5*v),a=V1?Math.min(1,.3+v*1.05):Math.min(.94,.28+v*.95);
   o.font=sz.toFixed(1)+"px VT323,monospace";o.fillStyle=V1?(v>.56?`rgba(${(150+105*v)|0},255,${(170+85*v)|0},${a})`:`rgba(${(60*v)|0},${(120+160*v)|0},${(55+60*v)|0},${a})`):v>.6?`rgba(${(110+115*v)|0},255,${(140+95*v)|0},${a})`:`rgba(${(60*v)|0},${(120+160*v)|0},${(55+60*v)|0},${a})`;o.fillText((Math.random()<.5?g:DIG[HV.ch[i]]),px+fs/2,py+fs/2+1)}
-function hvShow(url,force){if(!url||(TOUCH&&!force))return;HV.rd=force?(HV.slow?1800:480):880;if(!force&&url!==HV.url&&performance.now()-(HV.sh||0)>260){HV.sh=performance.now();sfx.hover()}if(!force){HV.cx=HV.cy=null;HV.sc=1;HV.fso=0;HV.rstyle=null}if(url===HV.url&&HV.ta)return;if(url!==HV.url)HV.tn=null;HV.url=url;HV.ta=1;HV.t0=performance.now();HV.gl=performance.now()+120;HV.nextGl=performance.now()+700;const go=im=>{if(HV.url===url){hvBuild(im);HV.t0=performance.now()}};
+function hvShow(url,force){if(!url||(TOUCH&&!force))return;HV.rd=force?(HV.rdx||(HV.slow?1800:480)):880;if(!force&&url!==HV.url&&performance.now()-(HV.sh||0)>260){HV.sh=performance.now();sfx.hover()}if(!force){HV.cx=HV.cy=null;HV.sc=1;HV.fso=0;HV.rstyle=null}if(url===HV.url&&HV.ta)return;if(url!==HV.url)HV.tn=null;HV.url=url;HV.ta=1;HV.t0=performance.now();HV.gl=performance.now()+120;HV.nextGl=performance.now()+700;const go=im=>{if(HV.url===url){hvBuild(im);HV.t0=performance.now()}};
   const c=HV.cache.get(url);if(c&&c.complete&&c.naturalWidth){go(c);return}const im=new Image();im.onload=()=>go(im);im.src=url;HV.cache.set(url,im)}
 function hvHide(){HV.ta=0}
-function hvDraw(x,t){HV.a+=(HV.ta-HV.a)*(HV.slow?(HV.ta?.04:.035):(HV.ta?.14:.1));if(HV.a<.01||!HV.off)return;
+function hvDraw(x,t){HV.a+=(HV.ta-HV.a)*(HV.slow?(HV.ta?.04:.035):HV.soft?(HV.ta?.09:.075):(HV.ta?.14:.1));if(HV.a<.01||!HV.off)return;
   /* image en mouvement (Virgile) : la photo dérive et tremble comme en plein vol */
   if(HV.mv&&!RM&&HV.bx!=null){HV.ox=HV.bx+(Math.sin(t/430)*9+Math.sin(t/170)*2.5)*HV.mv;HV.oy=HV.by+(Math.cos(t/610)*5+Math.sin(t/230)*1.5)*HV.mv}
   /* scintillement : quelques chiffres changent à chaque image */
@@ -1352,6 +1355,7 @@ function hvDraw(x,t){HV.a+=(HV.ta-HV.a)*(HV.slow?(HV.ta?.04:.035):(HV.ta?.14:.1)
     if(HV.tcm_k!==HV.tc||HV.tcm_m!==HV.mk){HV.tcm_k=HV.tc;HV.tcm_m=HV.mk;const m=document.createElement("canvas");m.width=HV.tc.width;m.height=HV.tc.height;const mx=m.getContext("2d");mx.drawImage(HV.tc,0,0);if(HV.mk){mx.globalCompositeOperation="destination-in";mx.imageSmoothingEnabled=true;mx.filter="blur("+Math.round(m.width/40)+"px)";mx.drawImage(HV.mk,0,0,m.width,m.height);mx.filter="none"}HV.tcm=m}
     x.save();if(HV.o.v1)x.globalAlpha=HV.a*.85*p*p;else{x.globalCompositeOperation="lighter";x.globalAlpha=HV.a*.48*HV.k*p*p}x.drawImage(HV.tcm||HV.tc,HV.ox,HV.oy,HV.w,HV.h);x.restore()}
   x.save();x.globalAlpha=HV.a;x.drawImage(src,0,0,src.width,src.height,HV.ox,HV.oy,HV.w,HV.h);
+  if(HV.o.raw){x.globalCompositeOperation="lighter";x.globalAlpha=HV.a*.45;x.drawImage(src,0,0,src.width,src.height,HV.ox,HV.oy,HV.w,HV.h);x.globalCompositeOperation="source-over"}
   if(HV.mv&&!RM){x.globalCompositeOperation="lighter";x.globalAlpha=HV.a*.14;x.drawImage(src,0,0,src.width,src.height,HV.ox-Math.cos(t/430)*11*HV.mv,HV.oy+Math.sin(t/610)*3,HV.w,HV.h);x.globalCompositeOperation="source-over"}
 
   /* léger glitch : tranches décalées + image fantôme, par à-coups */
@@ -1479,7 +1483,7 @@ function updScore(){$("#score").textContent="SCORE "+pad(SC.s,6);const L=lvInfo(
   for(const el of $$(".lvn"))el.textContent="NIV "+L.n;for(const el of $$(".lvr"))el.textContent=L.name;for(const el of $$(".lvx"))el.textContent=`${SC.s.toLocaleString("fr-FR")} / ${L.hi.toLocaleString("fr-FR")}`;
   const xb=$("#xpb");if(xb)xb.setAttribute("aria-valuenow",String(Math.round(pc)))}
 function popScore(v){ptsFx(v);const lbOn=$("#lb").classList.contains("on"),pres=document.body.classList.contains("pres-open"),el=lbOn?$("#lbks"):pres?$("#hsc"):$("#score");if(!el||!el.offsetParent)return;const r=el.getBoundingClientRect(),t=document.createElement("span");t.className="pts";t.textContent="+"+v;if(lbOn)t.style.left=(r.right+12)+"px";else t.style.right=(innerWidth-r.left+8)+"px";t.style.top=(r.top+r.height/2-6)+"px";document.body.appendChild(t);setTimeout(()=>t.remove(),1200);el.classList.remove("bump");void el.offsetWidth;el.classList.add("bump")}
-function addScore(k,id,v){const first=!SC[k][id];SC[k][id]=1;SC.s+=v;ss.set("sc",JSON.stringify(SC));updScore();const h=$("#hsc");if(h)h.textContent=pad(SC.s,6);requestAnimationFrame(()=>popScore(v));
+function addScore(k,id,v){SC[k]=SC[k]||{};const first=!SC[k][id];if(!first)return false;/* une action ne rapporte ses points qu'une seule fois */SC[k][id]=1;SC.s+=v;ss.set("sc",JSON.stringify(SC));updScore();const h=$("#hsc");if(h)h.textContent=pad(SC.s,6);requestAnimationFrame(()=>popScore(v));
   const all=projs().filter(p=>p.files.length).every(p=>SC.p[p.id]);if(all&&!SC.done){SC.done=1;ss.set("sc",JSON.stringify(SC));setTimeout(()=>toast("★ SUCCÈS DÉBLOQUÉ : L'ÉLU · tous les dossiers décryptés"),1200)}return first}
 
 
@@ -1986,27 +1990,38 @@ function digiImg(im,cols){const key=im.src+"|"+cols;if(MXO.dg.has(key))return MX
   for(let i=0;i<n;i++){let v=Math.min(1,Math.pow(.35*G[i]/255+.65*cdf[G[i]],.9)*1.08);v=v*v*(3-2*v)*.6+v*.4;L[i]=v;if(v<.08)continue;const x=i%cols,y=(i/cols)|0;
     ox.font=(cs*(.85+.45*v)).toFixed(1)+"px VT323,monospace";ox.fillStyle=v>.6?`rgba(${(170+85*v)|0},255,${(190+65*v)|0},${Math.min(1,.35+v)})`:`rgba(${(40*v)|0},${(130+150*v)|0},${(60+50*v)|0},${Math.min(1,.3+v*1.1)})`;ox.fillText(DIG[Math.random()*10|0],x*cs+cs/2,y*cs+cs/2+1)}
   const res={c:o,L,cols,rows};MXO.dg.set(key,res);return res}
+const TTL=new Map();
+async function titleImg(t,mob){const k=t+(mob?"|m":"");if(TTL.has(k))return TTL.get(k);try{try{await Promise.race([document.fonts.load('64px "Press Start 2P"'),new Promise(r=>setTimeout(r,500))])}catch(e){}
+  const F=96,ff=`${F}px "Press Start 2P",monospace`,c=document.createElement("canvas"),x=c.getContext("2d");x.font=ff;const ws=t.split(/\s+/).filter(Boolean);let lines=[t];
+  const mw=s=>x.measureText(s).width;if(ws.length>1&&mw(t)>F*(mob?7:11)){let best=null;for(let i=1;i<ws.length;i++){const a=ws.slice(0,i).join(" "),b=ws.slice(i).join(" "),m=Math.max(mw(a),mw(b));if(!best||m<best[0])best=[m,[a,b]]}lines=best[1]}
+  const pad=F*.55,lh=F*1.45,W=Math.ceil(Math.max(...lines.map(mw))+pad*2),H=Math.ceil(lines.length*lh+pad*2-F*.45);c.width=W;c.height=H;x.fillStyle="#000";x.fillRect(0,0,W,H);x.font=ff;x.textAlign="center";x.textBaseline="top";x.fillStyle="#fff";
+  lines.forEach((l,i)=>x.fillText(l,W/2,pad+i*lh));const u=c.toDataURL("image/png");TTL.set(k,u);return u}catch(e){return ""}}
 function loadIm(u,ms){return new Promise(res=>{if(!u){res(null);return}const c=HV.cache.get(u);if(c&&c.complete&&c.naturalWidth){res(c);return}const im=new Image();let ok=0;im.onload=()=>{ok=1;res(im)};im.onerror=()=>res(null);im.src=u;if(!c)HV.cache.set(u,im);setTimeout(()=>{if(!ok)res(null)},ms)})}
 function mxOpen(p,mid){const mxP=(...a)=>{try{window.mxProg&&window.mxProg(...a)}catch(e){}};return new Promise(async done=>{MUS.boost=.7;
   if(RM){await mid();done();return}
-  hvHide();BT.E=1.6;const W=innerWidth,H=innerHeight,mob=W<860,b=document.body;b.classList.add("wel","mxdive");
+  hvHide();BT.E=.9;const W=innerWidth,H=innerHeight,mob=W<860,b=document.body;b.classList.add("wel","mxdive");
   let lab=document.getElementById("mxl");if(!lab){lab=document.createElement("p");lab.id="mxl";lab.setAttribute("aria-hidden","true");b.appendChild(lab)}lab.className="on";
   const title=String(p.short||p.title).toUpperCase(),cvF=p.files[p.cover|0];
-  const pool=p.files.filter(f=>f.t==="img"&&f!==cvF).sort(()=>Math.random()-.5).slice(0,mob?3:4).map(f=>safe(f.th||f.u)).filter(Boolean);
+  const pool=p.files.filter(f=>f.t==="img"&&f!==cvF).sort(()=>Math.random()-.5).slice(0,mob?1:2).map(f=>safe(f.th||f.u)).filter(Boolean);
   const coverU=safe(p.hv)||coverOf(p);lab.textContent=`> connexion au dossier ${title}…`;mxP(.04,"> connexion au dossier…",title);
   await Promise.all([...pool,coverU].map(u=>loadIm(u,700)));
-  const sleep=ms=>new Promise(r=>setTimeout(r,ms)),n=pool.length,tot=n+(coverU?1:0),SS=["out","in","rain","side","spiral","scatter"],a0=Math.random()*6.283;
-  /* les photos du dossier surgissent une à une dans le réseau, tout autour du centre */
-  for(let i=0;i<n;i++){let s;do{s=SS[Math.random()*SS.length|0]}while(s===HV.rstyle);HV.rstyle=s;
-    const an=a0+i*2.4;HV.cx=W/2+Math.cos(an)*W*(mob?.12:.22);HV.cy=H*.48+Math.sin(an)*H*.14;HV.sc=.62+Math.random()*.14;HV.fso=mob?4:4.5;HV.url="";hvShow(pool[i],true);
-    btPulse(HV.cx+Math.cos(an)*H*.3,HV.cy+Math.sin(an)*H*.3,false);lab.textContent=`> décryptage ${title}… ${pad(i+1)}/${pad(tot)}`;{const M=["> décryptage des métadonnées…","> extraction EXIF · ISO · focale…","> reconstruction des pixels…","> indexation des fichiers…","> vérification de la signature…"];const f=p.files.filter(x=>x.t==="img")[i];mxP((i+1)/(tot+1),M[i%M.length],`${f?f.n:""} · ${f?f.w+"×"+f.h:""} · ${"0x"+(Math.random()*65535|0).toString(16).toUpperCase()}`)}sfx.hover();await sleep(mob?560:680)}
-  /* la couverture au centre, plus grande */
-  if(coverU){HV.rstyle="in";HV.cx=W/2;HV.cy=H*.48;HV.sc=mob?.92:1;HV.fso=mob?4:5;HV.url="";hvShow(coverU,true);btPulse(W/2,H/2,true);sfx.hover();lab.textContent=`> ${title} · ${pad(tot)}/${pad(tot)} · accès autorisé`;mxP(1,"> métadonnées déchiffrées · accès autorisé",`${title} · ${p.files.length} fichiers · ${String(p.cat||"").toLowerCase()}`);await sleep(1000)}
+  const sleep=ms=>new Promise(r=>setTimeout(r,ms)),n=pool.length,tot=n+(coverU?1:0);HV.soft=1;
+  /* 1. le nom du dossier s'écrit en chiffres, relié au réseau tentaculaire */
+  const TU=await titleImg(title,mob);if(TU){HV.O[TU]={fs:mob?4:5,net:1,ten:1.25,raw:1,k:1.08};HV.rstyle="code";HV.rdx=560;HV.cx=W/2;HV.cy=H*.46;HV.sc=mob?1:1.42;HV.fso=0;HV.url="";hvShow(TU,true);
+    lab.textContent=`> ${title}`;await sleep(950);hvHide();await sleep(200)}
+  /* 2. quelques photos seulement, en rythme : apparition, respiration, fondu */
+  const SP=mob?[[.5,.4]]:[[.32,.47],[.68,.5]];
+  for(let i=0;i<n;i++){HV.rstyle="code";HV.rdx=560;HV.cx=W*SP[i%SP.length][0];HV.cy=H*SP[i%SP.length][1];HV.sc=mob?.7:.7;HV.fso=mob?4:4.5;HV.url="";hvShow(pool[i],true);
+    lab.textContent=`> décryptage ${title}… ${pad(i+1)}/${pad(tot)}`;{const M=["> décryptage des métadonnées…","> extraction EXIF · ISO · focale…","> reconstruction des pixels…"];const f=p.files.filter(x=>x.t==="img")[i];mxP((i+1)/(tot+1),M[i%M.length],`${f?f.n:""} · ${f?f.w+"×"+f.h:""} · ${"0x"+(Math.random()*65535|0).toString(16).toUpperCase()}`)}sfx.blip();await sleep(640);hvHide();await sleep(220)}
+  /* 3. la couverture au centre */
+  if(coverU){HV.rstyle="code";HV.rdx=600;HV.cx=W/2;HV.cy=H*.48;HV.sc=mob?.92:1;HV.fso=mob?4:5;HV.url="";hvShow(coverU,true);btPulse(W/2,H/2,true);sfx.hover();lab.textContent=`> ${title} · ${pad(tot)}/${pad(tot)} · accès autorisé`;mxP(1,"> métadonnées déchiffrées · accès autorisé",`${title} · ${p.files.length} fichiers · ${String(p.cat||"").toLowerCase()}`);await sleep(880)}
+  HV.rdx=0;HV.soft=0;
   /* aspiration : le réseau plonge vers l'écran, puis la page s'ouvre */
   b.classList.add("mxsuck");try{sfx.trans()}catch(e){}await sleep(560);
   await mid();hvHide();HV.cx=HV.cy=null;HV.sc=1;HV.fso=0;HV.rstyle=null;HV.ph=0;lab.className="";mxP(null);
   b.classList.remove("wel","mxsuck");setTimeout(()=>b.classList.remove("mxdive"),50);done()})}
 async function openProject(id){const p=projs().find(x=>x.id===id);if(!p)return;closeAllWins();hvHide();sfx.proj(p);
+  if(document.body.classList.contains("pres-open")){const b=document.body;P.classList.add("pleave");await wait(340);b.classList.add("wel");b.classList.remove("pres-open");P.classList.remove("pleave");P.innerHTML="";clearInterval(encT);clearInterval(typeT);cur=null;R.on=true}
   await mxOpen(p,async()=>{renderPres(id);document.body.classList.add("pres-open");P.scrollTop=0;onPS()});addScore("p",id,500);
   try{history.replaceState(null,"","#p-"+id)}catch(e){}P.focus({preventScroll:true})}
 async function closeProject(){if(!cur)return;await mxBug(async()=>{document.body.classList.remove("pres-open");P.innerHTML="";clearInterval(encT);clearInterval(typeT);cur=null;R.on=true;if(!document.body.classList.contains("os"))enterOS(true)});
@@ -2117,12 +2132,14 @@ async function welcome(){if(WEL)return;musStart();const tok={skip:0,stage:"mont"
   const keyH=e=>{if(e.key==="Escape"){tok.skip=2}else if(e.key===" "||e.key==="Enter"){e.preventDefault();tok.skip=Math.max(tok.skip,1)}};addEventListener("keydown",keyH);
   const sleep=ms=>new Promise(res=>{const t0=performance.now(),k=tok.skip;const ck=()=>{if(tok.skip!==k||performance.now()-t0>=ms)res();else requestAnimationFrame(ck)};ck()});
   /* 1. montage : les images surgissent dans le réseau, à des endroits différents */
-  if(!RM&&urls.length){const order=urls.slice().sort(()=>Math.random()-.5),n=Math.min(3,order.length),W=innerWidth,H=innerHeight,mob=W<860;
-    /* 3 photos seulement, lentes, à des endroits différents de la page, en décalé */
-    const SPOT=mob?[[.5,.36],[.5,.66],[.5,.5]]:[[.3,.42],[.7,.58],[.5,.47]];HV.slow=1;
-    for(let i=0;i<n&&!tok.skip;i++){const u=order[i];HV.rstyle="code";HV.cx=W*SPOT[i][0];HV.cy=H*SPOT[i][1];HV.sc=mob?.66:.78;HV.fso=mob?4.5:5;HV.url="";hvShow(u,true);
-      {const an=Math.random()*6.283,rh=H*.43*HV.sc;btPulse(HV.cx+Math.cos(an)*rh*1.1,HV.cy+Math.sin(an)*rh,false)}ld.textContent=`> chargement des souvenirs… ${pad(i+1)}/${pad(n)}`;sfx.hover();await sleep(3000);if(i<n-1){hvHide();await sleep(900)}}
-    HV.slow=0;
+  if(!RM&&urls.length){const order=urls.slice().sort(()=>Math.random()-.5),W=innerWidth,H=innerHeight,mob=W<860,n=Math.min(mob?3:4,order.length),BEAT=600;
+    /* rythme : une image toutes les 2 temps (100 BPM), apparition en pluie de code, respiration, fondu */
+    HV.soft=1;const nm=(C.site.name||"MAXENCE").toUpperCase(),TU=await titleImg(nm,mob);
+    if(TU&&!tok.skip){HV.O[TU]={fs:mob?4:5,net:1,ten:1.25,raw:1,k:1.08};HV.rstyle="code";HV.rdx=700;HV.cx=W/2;HV.cy=H*.47;HV.sc=mob?1:1.3;HV.fso=0;HV.url="";hvShow(TU,true);ld.textContent="> connexion…";await sleep(BEAT*2-250);hvHide();await sleep(250)}
+    const SPOT=mob?[[.5,.36],[.5,.64],[.5,.48]]:[[.3,.42],[.7,.57],[.42,.6],[.64,.4]];
+    for(let i=0;i<n&&!tok.skip;i++){const u=order[i];HV.rstyle="code";HV.rdx=620;HV.cx=W*SPOT[i][0];HV.cy=H*SPOT[i][1];HV.sc=mob?.64:.7;HV.fso=mob?4.5:5;HV.url="";hvShow(u,true);
+      {const an=Math.random()*6.283,rh=H*.43*HV.sc;btPulse(HV.cx+Math.cos(an)*rh*1.1,HV.cy+Math.sin(an)*rh,false)}ld.textContent=`> chargement des souvenirs… ${pad(i+1)}/${pad(n)}`;sfx.blip();await sleep(BEAT*2-260);if(i<n-1){hvHide();await sleep(260)}}
+    HV.soft=0;HV.rdx=0;
     hvHide();HV.cx=HV.cy=null;HV.sc=1;HV.fso=0;HV.rstyle=null}
   ld.textContent="";if(tok.skip===1)tok.skip=0;
   /* 2. message tapé, qui sort de la matrice */
@@ -2261,7 +2278,7 @@ const box=document.createElement("div");box.id="ghlog";box.setAttribute("role","
 function openLogin(){const c=getCfg();box.innerHTML=`<form id="ghf" autocomplete="off"><p class="gt">// ACCÈS RESTREINT · AUTHENTIFICATION</p><h4>&gt; login root</h4>
   <label for="ghpw">MOT DE PASSE</label><input id="ghpw" type="password" required autofocus>
   <details ${c.token?"":"open"}><summary>CONNEXION GITHUB ${c.token?"· enregistrée ✓":"· à configurer une fois"}</summary>
-  <label for="ghrepo">DÉPÔT (propriétaire/nom)</label><input id="ghrepo" placeholder="maxence/portfolio" value="${esc(c.repo||"")}">
+  <label for="ghrepo">DÉPÔT (propriétaire/nom)</label><input id="ghrepo" placeholder="maxencecottin49-pixel/m4xence_cottin" value="${esc(c.repo||"maxencecottin49-pixel/m4xence_cottin")}">
   <label for="ghbr">BRANCHE</label><input id="ghbr" placeholder="main" value="${esc(c.branch||"main")}">
   <label for="ghdir">DOSSIER DU SITE (vide si à la racine)</label><input id="ghdir" placeholder="" value="${esc(c.dir||"")}">
   <label for="ghtk">JETON GITHUB (fine-grained · Contents : read and write)</label><input id="ghtk" type="password" placeholder="${c.token?"•••••• déjà enregistré":"github_pat_…"}">
