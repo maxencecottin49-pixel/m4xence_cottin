@@ -1010,6 +1010,14 @@ const sfx={
     osc("sawtooth",36.71,t+.05,2.5,.055,{f2:110,a:.45,drive:1,filt:["lowpass",180,5,1900,2.5]});
     noise(t+.12,2.3,.04,{f:280,f2:6500,q:3,a:.55,rev:.3});
     const S=SIG[id]||SIG[cat]||SIG._;try{S(t)}catch(e){}},
+  /* petite musique de chargement (100 BPM, ré mineur) : kick doux, charleston, arpège, basse */
+  loadMus(dur){if(!aInit()||!sndOn)return null;try{const t0=T0()+.05,b=ac.createGain();b.gain.value=.9;b.connect(AU.fx);const B=.6,E=B/2,nb=Math.max(4,Math.round(dur/B)),RT=[73.42,58.27,49,55];
+    for(let i=0;i<nb;i++){const t=t0+i*B,bar=i>>2,bt=i%4,up=bar%2?2:0;
+      osc("sine",66,t,.26,.15,{f2:34,a:.003,dest:b});noise(t+E,.022,.03,{type:"highpass",f:7200,dest:b});if(bt===1||bt===3)noise(t,.06,.035,{f:1800,q:.8,dest:b});
+      fm(t,nf(10+[0,2,4,3][bt]+up),2,1.6,.15,.024,{dest:b,dly:.22});fm(t+E,nf(12+[0,1,3,2][bt]+up),2,1.3,.11,.017,{dest:b,dly:.22});
+      if(bt===0)osc("sawtooth",RT[bar%4],t,B*3.7,.04,{a:.03,drive:1,filt:["lowpass",520,4,170,B*3.7],dest:b})}
+    fm(t0+nb*B,nf(15),2,1.2,1,.03,{dest:b,rev:.4,dly:.35});osc("sine",73.42,t0+nb*B,1,.1,{f2:36,dest:b});
+    return{stop(){try{const t=ac.currentTime;b.gain.cancelScheduledValues(t);b.gain.setValueAtTime(b.gain.value,t);b.gain.linearRampToValueAtTime(0,t+.3)}catch(e){}}}}catch(e){return null}},
   /* bug de la matrice : bégaiement numérique + bitcrush */
   glitch(){if(!aInit())return;const t=T0();const base=rr(300,900);for(let k=0;k<14;k++){const tt=t+k*.022;if(k%3===0)fm(tt,base*(1+(k%4)*.25),rr(.5,3.5),rr(2,8),.018,.05,{crush:.9,dest:AU.cr});else noise(tt,.014,.13,{f:rr(600,6000),q:6,crush:.7})}
     osc("sawtooth",110,t,.35,.06,{f2:27,drive:1,filt:["lowpass",900,5,120]});noise(t+.32,.25,.05,{type:"highpass",f:3000,f2:9000,rev:.3})},
@@ -1348,7 +1356,7 @@ function hvDraw(x,t){HV.a+=(HV.ta-HV.a)*(HV.slow?(HV.ta?.04:.035):HV.soft?(HV.ta
       x.font=fs+"px VT323,monospace";for(let tr=1;tr<6;tr++){x.fillStyle=`rgba(70,255,130,${(.86-tr*.15).toFixed(2)})`;for(let q=0;q<hs.length;q+=2){const rw=hs[q+1]-tr;if(rw>=0&&rw<Rr)x.fillText(DIG[Math.random()*10|0],HV.ox+(hs[q]+.5)*fs,HV.oy+(rw+1)*fs)}}}
     x.restore()}
   /* impact : la photo se verrouille d'un coup (éclair + décharge dans le réseau) */
-  if(p>=1&&HV.code&&!HV.imp&&!RM){HV.imp=t;HV.gl=t+150;try{btPulse(HV.ox+HV.w/2,HV.oy+HV.h/2,false)}catch(e){}}
+  if(p>=1&&HV.code&&!HV.imp&&!RM){HV.imp=t;HV.gl=t+150;if(!HV.soft)try{btPulse(HV.ox+HV.w/2,HV.oy+HV.h/2,false)}catch(e){}}
   const src=p<1?HV.rv:HV.off;
   if(HV.imp&&t-HV.imp<340){x.save();x.globalCompositeOperation="lighter";x.globalAlpha=HV.a*.5*(1-(t-HV.imp)/340);x.drawImage(HV.off,0,0,HV.off.width,HV.off.height,HV.ox,HV.oy,HV.w,HV.h);x.restore()}
   if(HV.ph&&HV.im){if(HV.tim!==HV.im){HV.tim=HV.im;const c=document.createElement("canvas"),k=Math.min(1,900/Math.max(HV.im.naturalWidth,HV.im.naturalHeight));c.width=HV.im.naturalWidth*k|0;c.height=HV.im.naturalHeight*k|0;const cx=c.getContext("2d");cx.filter="grayscale(1) contrast(1.25) brightness(.78)";cx.drawImage(HV.im,0,0,c.width,c.height);cx.filter="none";cx.globalCompositeOperation="multiply";cx.fillStyle="#38ff74";cx.fillRect(0,0,c.width,c.height);HV.tc=c}
@@ -1994,10 +2002,10 @@ function digiImg(im,cols){const key=im.src+"|"+cols;if(MXO.dg.has(key))return MX
 /* ================= texte tentaculaire : les lettres sont faites de tentacules de chiffres ================= */
 const TT={a:0,ta:0,o:null};
 function ttPrep(txt,cx,cy,maxW,maxH){return (async()=>{try{await Promise.race([document.fonts.load('800 80px Unbounded'),new Promise(r=>setTimeout(r,450))])}catch(e){}
-  const W=R.w,H=R.h,g=W<700?4.5:5,FF=z=>`800 ${z}px Unbounded,"Arial Black",Impact,sans-serif`,m=document.createElement("canvas").getContext("2d");
+  const W=R.w,H=R.h,g0=W<700?4.5:5,FF=z=>`800 ${z}px Unbounded,"Arial Black",Impact,sans-serif`,m=document.createElement("canvas").getContext("2d");
   txt=String(txt).toUpperCase();const ws=txt.split(/\s+/).filter(Boolean);m.font=FF(100);const mw=z=>m.measureText(z).width/100;
   let lines=[txt];if(ws.length>1&&mw(txt)>(maxW/maxH)*1.3){let best=null;for(let i=1;i<ws.length;i++){const a=ws.slice(0,i).join(" "),b=ws.slice(i).join(" "),q=Math.max(mw(a),mw(b));if(!best||q<best[0])best=[q,[a,b]]}lines=best[1]}
-  const lw=Math.max(...lines.map(mw)),lh=1.14;let F=Math.min(maxW/lw,maxH/(lines.length*lh));F=Math.max(F,g*8);
+  const lw=Math.max(...lines.map(mw)),lh=1.14;let F=Math.min(maxW/lw,maxH/(lines.length*lh));F=Math.max(F,g0*8);const g=Math.min(g0,Math.max(3.6,F/24));
   const pad=Math.ceil(F*.3/g),gw=Math.ceil(lw*F/g)+pad*2,gh=Math.ceil(lines.length*lh*F/g)+pad*2,n=gw*gh;
   const mc=document.createElement("canvas");mc.width=gw;mc.height=gh;const mx=mc.getContext("2d");mx.fillStyle="#fff";mx.font=FF(F/g);mx.textAlign="center";mx.textBaseline="middle";
   lines.forEach((l,i)=>mx.fillText(l,gw/2,pad+(i+.5)*lh*F/g));const id=mx.getImageData(0,0,gw,gh).data,D=new Float32Array(n);for(let i=0;i<n;i++)D[i]=id[i*4+3]>110?1e4:0;
@@ -2005,22 +2013,35 @@ function ttPrep(txt,cx,cy,maxW,maxH){return (async()=>{try{await Promise.race([d
   for(let y=0;y<gh;y++)for(let x=0;x<gw;x++){const i=y*gw+x;if(!D[i])continue;let v=D[i];if(x>0)v=Math.min(v,D[i-1]+1);else v=1;if(y>0){v=Math.min(v,D[i-gw]+1);if(x>0)v=Math.min(v,D[i-gw-1]+1.41);if(x<gw-1)v=Math.min(v,D[i-gw+1]+1.41)}else v=1;D[i]=v}
   for(let y=gh-1;y>=0;y--)for(let x=gw-1;x>=0;x--){const i=y*gw+x;if(!D[i])continue;let v=D[i];if(x<gw-1)v=Math.min(v,D[i+1]+1);else v=1;if(y<gh-1){v=Math.min(v,D[i+gw]+1);if(x<gw-1)v=Math.min(v,D[i+gw+1]+1.41);if(x>0)v=Math.min(v,D[i+gw-1]+1.41)}else v=1;D[i]=v}
   const at=(x,y)=>{x=x|0;y=y|0;return x<0||y<0||x>=gw||y>=gh?0:D[y*gw+x]};let dmax=1;for(let i=0;i<n;i++)if(D[i]>dmax)dmax=D[i];
-  const ox=cx-gw*g/2,oy=Math.max(cy-gh*g/2,(parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--barh"))||40)+6),cells=[],occ=new Map(),paths=[],R_=Math.random,ST=8;
+  const ox=cx-gw*g/2,oy=Math.max(cy-gh*g/2,(parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--barh"))||40)+6),cells=[],occ=new Map(),paths=[],R_=Math.random,ST=11;
   const put=(x,y,s,a,k)=>{const gx=Math.round(x),gy=Math.round(y),kk=(gx+4096)*8192+gy+4096,o=occ.get(kk);if(o!==undefined){const c=cells[o];if(a>c.a)c.a=a;if(s<c.s)c.s=s;return}occ.set(kk,cells.length);cells.push({x:ox+gx*g,y:oy+gy*g,s,a,k})};
-  /* 1. dans les lettres : des tentacules qui serpentent le long des fûts et se tressent */
-  const ins=[];for(let i=0;i<n;i++)if(D[i]>=1)ins.push(i);const cov=new Uint8Array(n);let ncov=0;const mark=(x,y)=>{for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){const X=(x|0)+dx,Y=(y|0)+dy;if(X<0||Y<0||X>=gw||Y>=gh)continue;const j=Y*gw+X;if(D[j]&&!cov[j]){cov[j]=1;ncov++}}};
-  for(let w=0;w<900&&ins.length&&ncov<ins.length*.93;w++){let i0=ins[R_()*ins.length|0];for(let tr=0;tr<12&&cov[i0];tr++)i0=ins[R_()*ins.length|0];let x=i0%gw+.5,y=(i0/gw|0)+.5,hx=R_()-.5,hy=R_()-.5;{const l=Math.hypot(hx,hy)||1;hx/=l;hy/=l}
-    let s=R_()*300+Math.min(260,w*1.2);const L=22+R_()*60|0,ph=R_()*6.28,fr=.14+R_()*.2,path=[];
-    for(let k=0;k<L;k++){const gx_=at(x+1,y)-at(x-1,y),gy_=at(x,y+1)-at(x,y-1),gl=Math.hypot(gx_,gy_)||1;let tx=-gy_/gl,ty=gx_/gl;if(tx*hx+ty*hy<0){tx=-tx;ty=-ty}
-      const d=at(x,y),wc=d<1.8?.55:d<2.6?.18:0,wob=Math.sin(k*fr+ph)*.27;let nx=hx*.6+tx*.42+gx_/gl*wc,ny=hy*.6+ty*.42+gy_/gl*wc;const cs=Math.cos(wob),sn=Math.sin(wob),rx=nx*cs-ny*sn,ry=nx*sn+ny*cs,l2=Math.hypot(rx,ry)||1;hx=rx/l2;hy=ry/l2;
-      let px=x+hx*.85,py=y+hy*.85;if(!at(px,py)){hx=gx_/gl;hy=gy_/gl;px=x+hx*.85;py=y+hy*.85;if(!at(px,py))break}
-      x=px;y=py;s+=ST;mark(x,y);put(x,y,s,.5+.5*Math.min(1,at(x,y)/Math.max(2,dmax*.6)),0);path.push([ox+Math.round(x)*g,oy+Math.round(y)*g])}
-    if(path.length>6)paths.push(path)}
-  /* 2. des tentacules s'échappent des lettres et les relient au réseau de fond */
-  const edge=[];for(let i=0;i<n;i++)if(D[i]>0&&D[i]<1.5)edge.push(i);const NE=Math.min(24,6+edge.length/70|0);
-  for(let w=0;w<NE&&edge.length;w++){const i0=edge[R_()*edge.length|0];let x=i0%gw+.5,y=(i0/gw|0)+.5;const gx_=at(x+1,y)-at(x-1,y),gy_=at(x,y+1)-at(x,y-1);
-    let d=Math.atan2(-gy_,-gx_)+(R_()-.5)*.9,tr=(R_()-.5)*.05,s=260+R_()*520;const L=18+R_()*72|0,ph=R_()*6.28,path=[];
-    for(let k=0;k<L;k++){d+=tr+Math.sin(k*.15+ph)*.1;x+=Math.cos(d)*.9;y+=Math.sin(d)*.9;s+=ST*1.15;const X=ox+Math.round(x)*g,Y=oy+Math.round(y)*g;if(X<0||Y<0||X>W||Y>H)break;if(at(x,y))continue;put(x,y,s,.66*(1-k/L)+.1,1);path.push([X,Y])}
+  /* 1. squelette des lettres : la ligne de crête au cœur de chaque fût */
+  const SK=new Uint8Array(n);for(let y=1;y<gh-1;y++)for(let x=1;x<gw-1;x++){const i=y*gw+x,d=D[i];if(d<1.2)continue;if((d>=D[i-1]&&d>=D[i+1])||(d>=D[i-gw]&&d>=D[i+gw]))SK[i]=1}
+  const vis=new Uint8Array(n),lines_=[],NB=[[1,0],[1,1],[0,1],[-1,1],[-1,0],[-1,-1],[0,-1],[1,-1],[2,0],[2,1],[1,2],[0,2],[-1,2],[-2,1],[-2,0],[-2,-1],[-1,-2],[0,-2],[1,-2],[2,-1]];
+  const N8=NB.slice(0,8),trace=(x,y,hx,hy)=>{const pts=[];for(let k=0;k<600;k++){pts.push([x,y]);vis[y*gw+x]=1;
+      let best=null,bs=-9;for(const [dx,dy] of NB){const X=x+dx,Y=y+dy;if(X<0||Y<0||X>=gw||Y>=gh)continue;const j=Y*gw+X;if(!SK[j]||vis[j])continue;const l=Math.hypot(dx,dy),dt=(dx*hx+dy*hy)/l;if(dt<-.3)continue;const sc=dt-l*.35;if(sc>bs){bs=sc;best=[X,Y,dx/l,dy/l]}}
+      for(const [dx,dy] of N8){const X=x+dx,Y=y+dy;if(X<0||Y<0||X>=gw||Y>=gh)continue;if(best&&X===best[0]&&Y===best[1])continue;vis[Y*gw+X]=1}
+      if(!best)break;x=best[0];y=best[1];hx=hx*.5+best[2]*.5;hy=hy*.5+best[3]*.5;const l=Math.hypot(hx,hy)||1;hx/=l;hy/=l}return pts};
+  const seeds=[];for(let i=0;i<n;i++)if(SK[i])seeds.push(i);seeds.sort((a,b)=>D[b]-D[a]);
+  for(const i0 of seeds){if(vis[i0])continue;const x0=i0%gw,y0=i0/gw|0;const A=trace(x0,y0,0,0);let B=[];
+    if(A.length>1){const dx=A[1][0]-x0,dy=A[1][1]-y0,l=Math.hypot(dx,dy)||1;for(const [ex,ey] of N8){const X=x0+ex,Y=y0+ey;if(X<0||Y<0||X>=gw||Y>=gh)continue;if(X===A[1][0]&&Y===A[1][1])continue;if(Math.abs(X-A[1][0])<=1&&Math.abs(Y-A[1][1])<=1)continue;vis[Y*gw+X]=0}vis[i0]=0;B=trace(x0,y0,-dx/l,-dy/l)}
+    const pts=B.reverse().concat(A.slice(1));if(pts.length>=2)lines_.push(pts)}
+  /* lissage + tresse : 3 brins qui s'enroulent autour de la crête, comme une tentacule */
+  for(const L0 of lines_){const P=L0.map((q,i)=>{const a=L0[Math.max(0,i-1)],c=L0[Math.min(L0.length-1,i+1)];return[(a[0]+q[0]*2+c[0])/4,(a[1]+q[1]*2+c[1])/4]});
+    const s0=R_()*260,ph=R_()*6.28,fq=.5+R_()*.25;let arc=0;const path=[];
+    for(let i=0;i<P.length;i++){if(i)arc+=Math.hypot(P[i][0]-P[i-1][0],P[i][1]-P[i-1][1]);const a=P[Math.max(0,i-1)],c=P[Math.min(P.length-1,i+1)];let tx=c[0]-a[0],ty=c[1]-a[1];const tl=Math.hypot(tx,ty)||1;tx/=tl;ty/=tl;const nx=-ty,ny=tx,w=Math.max(.8,at(P[i][0],P[i][1])),s=s0+arc*ST;
+      put(P[i][0],P[i][1],s,.92,0);path.push([ox+Math.round(P[i][0])*g,oy+Math.round(P[i][1])*g]);
+      for(let j=0;j<3;j++){const th=arc*fq+ph+j*2.094,off=Math.sin(th)*w*.62,dep=Math.cos(th);put(P[i][0]+nx*off,P[i][1]+ny*off,s+20,.42+.4*(dep*.5+.5),0)}
+      if(w>2.2)for(const sg of [-1,1])put(P[i][0]+nx*sg*(w-.9),P[i][1]+ny*sg*(w-.9),s+40,.34,0)}
+    if(path.length>5)paths.push(path);L0.P=P;L0.s0=s0;L0.arc=arc}
+  /* lettres toujours complètes : les petits fûts oubliés par le squelette sont comblés */
+  for(let y=0;y<gh;y++)for(let x=0;x<gw;x++){if(D[y*gw+x]<1)continue;let near=false;for(let dy=-1;dy<=1&&!near;dy++)for(let dx=-1;dx<=1;dx++)if(occ.has((x+dx+4096)*8192+y+dy+4096)){near=true;break}if(!near)put(x,y,120+x/gw*700+R_()*120,.5+.3*Math.min(1,D[y*gw+x]/2),0)}
+  /* 2. aux extrémités des fûts, des tentacules s'échappent en s'enroulant et rejoignent le réseau */
+  const ends=[];for(const L0 of lines_){const P=L0.P;if(!P||P.length<4)continue;for(const e of [0,1]){const q=e?P[P.length-1]:P[0],r=e?P[P.length-3]:P[2];ends.push([q[0],q[1],q[0]-r[0],q[1]-r[1],L0.s0+(e?L0.arc*ST:0)])}}
+  for(let i=ends.length-1;i>0;i--){const j=R_()*(i+1)|0;[ends[i],ends[j]]=[ends[j],ends[i]]}
+  const NE=Math.min(14,Math.max(5,ends.length/3|0));
+  for(let w=0;w<NE&&w<ends.length;w++){let [x,y,dx,dy,s]=ends[w];let d=Math.atan2(dy,dx)+(R_()-.5)*.5;const L=16+R_()*44|0,sg=R_()<.5?-1:1,cu=.02+R_()*.05,path=[];
+    for(let k=0;k<L;k++){const f=k/L;d+=sg*cu*(1+f*f*5);x+=Math.cos(d)*.9;y+=Math.sin(d)*.9;s+=ST*1.2;const X=ox+Math.round(x)*g,Y=oy+Math.round(y)*g;if(X<0||Y<0||X>W||Y>H)break;if(at(x,y))continue;put(x,y,s,.75*(1-f)+.12,1);path.push([X,Y])}
     if(path.length>6)paths.push(path)}
   cells.sort((a,b)=>a.s-b.s);for(let i=paths.length-1;i>0;i--){const j=R_()*(i+1)|0;[paths[i],paths[j]]=[paths[j],paths[i]]}
   const dpr=Math.min(devicePixelRatio||1,2),off=document.createElement("canvas");off.width=Math.ceil(W*dpr);off.height=Math.ceil(H*dpr);const o=off.getContext("2d");o.setTransform(dpr,0,0,dpr,0,0);o.textAlign="center";o.textBaseline="middle";
@@ -2190,12 +2211,12 @@ async function welcome(){if(WEL)return;musStart();const tok={skip:0,stage:"mont"
   /* 1. montage : les images surgissent dans le réseau, à des endroits différents */
   if(!RM&&urls.length){const order=urls.slice().sort(()=>Math.random()-.5),W=innerWidth,H=innerHeight,mob=W<860,n=Math.min(mob?3:4,order.length),BEAT=600;
     /* rythme : une image toutes les 2 temps (100 BPM), apparition en pluie de code, respiration, fondu */
-    HV.soft=1;const nm=(C.site.name||"MAXENCE").toUpperCase(),pairs=[];for(let i=0;i+1<Math.min(4,order.length);i+=2)pairs.push([order[i],order[i+1]]);if(!pairs.length)pairs.push([order[0],order[0]]);
-    const [TX,P0]=await Promise.all([ttPrep(nm,W/2,H*(mob?.2:.2),W*(mob?.94:.62),H*(mob?.16:.17)),pairImg(pairs[0][0],pairs[0][1],mob)]);const P1=pairs[1]?pairImg(pairs[1][0],pairs[1][1],mob):null;
-    if(!tok.skip){ttStart(TX);ld.textContent="> connexion…"}
-    for(let i=0;i<pairs.length&&!tok.skip;i++){const PU=i?await P1:P0;if(!PU)continue;HV.rstyle="code";HV.rdx=760;HV.cx=W/2;HV.cy=H*(mob?.62:.61);HV.sc=mob?1.02:1.6;HV.fso=mob?4.5:5;HV.url="";hvShow(PU,true);
-      ld.textContent=`> chargement des souvenirs… ${pad(i+1)}/${pad(pairs.length)}`;sfx.blip();await sleep(BEAT*4-300);if(i<pairs.length-1){hvHide();await sleep(300)}}
-    ttHide();
+    /* intro rythmée : une photo toutes les 2 temps, en alternance gauche / droite, sur une petite musique de chargement */
+    const N=Math.min(6,Math.max(4,order.length)),SLOT=BEAT*2;HV.soft=1;let LM=null;try{musDuck(true);LM=sfx.loadMus(N*SLOT/1000)}catch(e){}
+    for(let i=0;i<N&&!tok.skip;i++){const u=order[i%order.length],r=Math.random,L=i%2===0;HV.rstyle="code";HV.rdx=520;
+      HV.cx=mob?W*(.38+r()*.24):W*(L?.26+r()*.16:.58+r()*.16);HV.cy=H*(.42+r()*.14);HV.sc=(mob?.62:.66)+r()*.16;HV.fso=mob?4.5:5;HV.url="";hvShow(u,true);
+      ld.textContent=`> chargement des souvenirs… ${pad(i+1)}/${pad(N)}`;await sleep(SLOT-240);hvHide();await sleep(240)}
+    if(tok.skip&&LM)LM.stop();try{musDuck(false)}catch(e){}
     HV.soft=0;HV.rdx=0;
     hvHide();HV.cx=HV.cy=null;HV.sc=1;HV.fso=0;HV.rstyle=null}
   ld.textContent="";if(tok.skip===1)tok.skip=0;
